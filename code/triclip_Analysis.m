@@ -273,12 +273,12 @@ end
 title('', 'FontSize', 14, 'FontWeight', 'bold');
 xlabel('Intervention', 'FontSize', 12);
 ylabel('Flow Rate (ml/s)', 'FontSize', 12);
-set(gca, 'XTick', x, 'XTickLabel', interventions, 'FontSize', 11);
+set(gca, 'XTick', x, 'XTickLabel', interventions, 'XTickLabelRotation',30);
 set(gcf, 'Color', 'white');
 grid on;
 hold off;
 
-pubPlot()
+pubPlot('Filename','Flow_vs_Intervention','FileExtension',{'.png','.pdf'});
 
 
 %% Pressure Bar Graph by Intervention Type
@@ -381,15 +381,15 @@ end
 %    'Location', 'best', 'NumColumns', 2);
 
 % Axis labels and formatting
-title('Average Pressures by Intervention Type with Individual Test Values', 'FontSize', 14, 'FontWeight', 'bold');
+% title('Average Pressures by Intervention Type with Individual Test Values', 'FontSize', 14, 'FontWeight', 'bold');
 xlabel('Intervention Type', 'FontSize', 12);
 ylabel('Pressure (mmHg)', 'FontSize', 12);
-set(gca, 'XTick', x, 'XTickLabel', interventions, 'FontSize', 11);
+set(gca, 'XTick', x, 'XTickLabel', interventions, 'XTickLabelRotation',30);
 set(gcf, 'Color', 'white');
 grid on;
 hold off;
 
-pubPlot()
+pubPlot('Filename','Pressure_vs_Intervention','FileExtension',{'.png','.pdf'});
 
 %% Force Difference Bar Graphs by Intervention Type (6 Subplots)
 
@@ -505,7 +505,7 @@ for interv_idx = 1:length(interventions)
     hold off;
 end
 
-pubPlot('Width','double','SpacingOffset',2)
+pubPlot('Width','double','Height',400,'Filename','ForceDiff_Pin','FileExtension',{'.png','.pdf'});
 
 %% Force Contour Spline Visualization (6 Subplots)
 
@@ -699,12 +699,14 @@ for intervention_index = 1:length(interventions)
     axis([-1.5 1.5 -1.5 1.5]);
     grid on;
     set(gca, 'FontSize', 10);
+    set(gca, 'XTickLabels',{})
+    set(gca, 'YTickLabels',{})
     hold off;
 end
 
 % Add overall title and legend
 
-pubPlot('Width','double','SpacingOffset',2)
+pubPlot('Width','double','Height',400,'Filename','ForceDiff_Contour','FileExtension',{'.png','.pdf'});
 
 %% Export averaged intervention data to Excel
 %{
