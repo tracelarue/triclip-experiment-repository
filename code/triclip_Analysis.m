@@ -3,7 +3,7 @@ clear all
 close all
 
 
-% ==========================================================================
+%% ==========================================================================
 
 % Get the full path of this script
 scriptPath = mfilename('fullpath');
@@ -183,13 +183,40 @@ hex2rgb = @(hex) sscanf(hex(2:end), '%2x%2x%2x', [1 3]) / 255;
 
 % Intervention Colors (used in all bar graphs and contour plots)
 COLORS = struct();
-COLORS.Diseased = hex2rgb('#EDE6CC');   % Light cream/beige
-COLORS.AS       = hex2rgb('#FCCC73');   % Light golden yellow
-COLORS.AP       = hex2rgb('#FC9933');   % Warm orange
-COLORS.SP       = hex2rgb('#E65940');   % Red-orange
-COLORS.ASAP     = hex2rgb('#CC1A1A');   % Burgundy/wine
-COLORS.SPAS     = hex2rgb('#801A33');   % Wine
-COLORS.SPAP     = hex2rgb('#333359');   % Dark teal/navy
+% COLORS.Diseased = hex2rgb('#EDE6CC');   % Light cream/beige
+% COLORS.AS       = hex2rgb('#FCCC73');   % Light golden yellow
+% COLORS.AP       = hex2rgb('#FC9933');   % Warm orange
+% COLORS.SP       = hex2rgb('#E65940');   % Red-orange
+% COLORS.ASAP     = hex2rgb('#CC1A1A');   % Burgundy/wine
+% COLORS.SPAS     = hex2rgb('#801A33');   % Wine
+% COLORS.SPAP     = hex2rgb('#333359');   % Dark teal/navy
+% 
+% % Rainbow Neon Fusion
+% COLORS.Diseased = hex2rgb('#333359');   % Light cream/beige
+% COLORS.AS       = hex2rgb('#8338EC');   % Light golden yellow
+% COLORS.AP       = hex2rgb('#3A86FF');   % Warm orange
+% COLORS.SP       = hex2rgb('#619EFF');   % Red-orange
+% COLORS.ASAP     = hex2rgb('#FFBE0B');   % Burgundy/wine
+% COLORS.SPAS     = hex2rgb('#FB5607');   % Wine
+% COLORS.SPAP     = hex2rgb('#FF006E');   % Dark teal/navy
+% 
+% % Tropical Sunset Mix
+% COLORS.Diseased = hex2rgb('#333359');   % Light cream/beige
+% COLORS.AS       = hex2rgb('#219ebc');   % Light golden yellow
+% COLORS.AP       = hex2rgb('#A8E8F9');   % Warm orange
+% COLORS.SP       = hex2rgb('#39B89A');   % Red-orange
+% COLORS.ASAP     = hex2rgb('#79D3BE');   % Burgundy/wine
+% COLORS.SPAS     = hex2rgb('#FF5883');   % Wine
+% COLORS.SPAP     = hex2rgb('#FF91AD');   % Dark teal/navy
+
+% Rainbow Neon Fusion
+COLORS.Diseased = hex2rgb('#333359');   % Dark teal/navy
+COLORS.AS       = hex2rgb('#741FEA');
+COLORS.AP       = hex2rgb('#4455EE');
+COLORS.SP       = hex2rgb('#85B4FF');
+COLORS.ASAP     = hex2rgb('#FFBE0B');
+COLORS.SPAS     = hex2rgb('#FB5607');
+COLORS.SPAP     = hex2rgb('#FF006E');   
 
 % Bar graph color arrays (all interventions including diseased)
 bar_colors = [ ...
@@ -219,7 +246,7 @@ SP_rect_color = COLORS.SP;
 
 
 % Define interventions and their corresponding data
-interventions = {'Dis      ', 'AS     ', 'AP     ', 'SP     ', 'ASAP        ', 'SPAS        ', 'SPAP        '};
+interventions = {'Dis', 'AS', 'AP', 'SP ', 'ASAP', 'SPAS', 'SPAP'};
 intervention_data = {diseased_data, AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
 
 % Which tests participate in each intervention (cell array, 1 row per intervention)
@@ -263,6 +290,7 @@ end
 
 % Plot setup
 figure('Position', [100, 100, 1200, 700]);
+subplot(1,2,1)
 
 %{
 Old color definitions - now using centralized colors from top of script
@@ -361,18 +389,19 @@ set(gca, 'XTick', x, 'XTickLabel', interventions, 'XTickLabelRotation',30);
 current_ylim = ylim;
 new_ylim = [current_ylim(1), max(current_ylim(2), line_height_base + (length(sig_interventions)-1) * line_spacing + 4)];
 ylim(new_ylim);
+ylim([0,70])
 
 set(gcf, 'Color', 'white');
 grid on;
 hold off;
 
-pubPlot('SpacingOffset',1,'Filename','Flow_vs_Intervention','FileExtension',{'.png','.pdf'});
+% pubPlot('SpacingOffset',1,'Filename','Flow_vs_Intervention','FileExtension',{'.png','.eps'});
 
 
 %% Pressure Bar Graph by Intervention Type
 
 % Define interventions and their corresponding data
-interventions = {'Diseased              ', 'AS     ', 'AP     ', 'SP     ', 'ASAP        ', 'SPAS        ', 'SPAP        '};
+interventions = {'Dis', 'AS', 'AP', 'SP ', 'ASAP', 'SPAS', 'SPAP'};
 intervention_data = {diseased_data, AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
 
 % Which tests participate in each intervention (cell array, 1 row per intervention)
@@ -415,20 +444,8 @@ for i = 1:num_interv
 end
 
 % Plot setup
-figure('Position', [100, 100, 1200, 700]);
-
-%{
-Old color definitions - now using centralized colors from top of script
-bar_colors = [ ...
-    0.2 0.2 0.2;        % Diseased - dark gray
-    1.0 0.4 0.0;        % AS - #FF6700 orange
-    0.95 0.16 0.31;     % AP - #F14F50 red
-    0.71 0.04 0.45;     % SP - #B50A72 magenta
-    0.39 0.22 0.58;     % ASAP - #643894 purple
-    0.32 0.38 0.93;     % SPAS - #5260EE blue
-    0.29 0.45 0.72;     % SPAP - #4A73B8 teal blue
-];
-%}
+% figure('Position', [100, 100, 1200, 700]);
+subplot(1,2,2)
 
 x = 1:num_interv;
 b = bar(x, avg_pressure, 'FaceColor', 'flat');
@@ -474,14 +491,15 @@ end
 
 % Axis labels and formatting
 % title('Average Pressures by Intervention Type with Individual Test Values', 'FontSize', 14, 'FontWeight', 'bold');
-xlabel('Intervention Type', 'FontSize', 12);
+xlabel('Intervention', 'FontSize', 12);
 ylabel('Pressure (mmHg)', 'FontSize', 12);
 set(gca, 'XTick', x, 'XTickLabel', interventions, 'XTickLabelRotation',30);
 set(gcf, 'Color', 'white');
 grid on;
 hold off;
 
-pubPlot('Filename','Pressure_vs_Intervention','FileExtension',{'.png','.pdf'});
+% pubPlot('Filename','Intervention','FileExtension',{'.png','.eps'});
+pubPlot('Width','double','Height',300,'Filename','Intervention','FileExtension',{'.png','.eps'});
 
 %% Force Difference Bar Graphs by Intervention Type (6 Subplots)
 
@@ -600,21 +618,24 @@ for interv_idx = 1:length(interventions)
     %}
     
     % Formatting
-    title(interventions{interv_idx}, 'FontWeight', 'bold', 'FontSize', 12);
+    title([interventions{interv_idx},', n=',num2str(length(tests_present))], 'FontWeight', 'bold', 'FontSize', 12);
     
     % Only add x and y labels to subplot 4 (ASAP)
-    if interv_idx == 4
+    if interv_idx == 5
         xlabel('Pin Number');
-        ylabel('\Delta F (N)');
+        % ylabel('\Delta F (N)');
     end
+    ylabel('\Delta F (N)');
     
     set(gca, 'XTick', 1:number_of_pins);
     grid on;
     set(gca, 'FontSize', 10);
+    ylim([-0.5,0.20])
+    yticks(-0.5:0.1:0.2)
     hold off;
 end
 
-pubPlot('Width','double','Height',400,'Filename','ForceDiff_Pin','FileExtension',{'.png','.pdf'});
+pubPlot('Width','double','Height',400,'Filename','ForceDiff_Pin','FileExtension',{'.png','.eps'});
 
 %% Force Contour Spline Visualization (6 Subplots)
 
@@ -991,12 +1012,12 @@ end
 
 % Add overall title and legend
 
-pubPlot('Width','double','Height',400,'Filename','ForceDiff_Contour','FileExtension',{'.png','.pdf'});
+pubPlot('Width','double','Height',400,'Filename','ForceDiff_Contour','FileExtension',{'.png','.eps'});
 
 
-%{
+
 %% Export Force Differences Relative to Diseased Data
-
+%{
 % Initialize empty structure array for collecting force difference rows
 diff_rows = struct('Intervention', {}, 'Test', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, 'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {});
 
@@ -1096,3 +1117,122 @@ end
 %}
 
 
+
+%% Plot and save all 10 
+testDataCurrent = test4data;
+% % Test 2 - SP,  AP,     SPAP 
+% start_time_dex = [42,37,48,...
+%                   58,58,51,...
+%                   47,42,46,...
+%                   40,52,55];
+% end_time_dex = [327,328,323,...
+%                 348,355,219,...
+%                 342,333,206,...
+%                 373,406,221];
+% % Test 3 - AS,  SP,     SPAS
+% start_time_dex = [72,56,92,...
+%                   40,46,57,...
+%                   39,47,106,...
+%                   42,43,73];
+% end_time_dex = [340,328,374,...
+%                 348,337,293,...
+%                 345,358,330,...
+%                 343,344,315];
+% Test 4 - AS,  AP,     ASAP
+% disease 10:12, AS 13:15, AP 16:18, ASAP  19:21
+start_time_dex = [40,34,80,...
+                  40,37,69,...
+                  50,43,45,...
+                  41,35,97];
+end_time_dex = [342,348,318,...
+                350,356,283,...
+                357,365,314,...
+                362,367,332];
+% % Test 5 - AS,  AP,     ASAP
+% % disease 10:12, AS 13:15, AP 16:18, ASAP  19:21
+% start_time_dex = [52,44,51,...
+%                   47,51,42,...
+%                   46,45,52,...
+%                   52,57,42];
+% end_time_dex = [377,366,204,...
+%                 357,350,212,...
+%                 392,421,272,...
+%                 476,450,275];
+start_time_dex = start_time_dex - 30;
+end_time_dex   = end_time_dex   + 50;
+
+run_dex = [10:21];
+data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.AP; COLORS.ASAP];
+
+% resample data
+num_pts = 1000;
+time_norm = linspace(0,1,num_pts);
+resampled_data = zeros(11,num_pts,3);
+resampled_data(1,:,:) = repmat(time_norm,1,1,size(resampled_data,3));
+% 9 x num_pts x numel(run_dex)
+% Row 1: Normalized Time
+% Row 2: Pressure
+% Row 3: Flow
+% Row 4-11: Pin Forces 1-8 in order
+% 3rd dimension is run
+for i = 1 : numel(run_dex)
+    % pressure
+    time_count = ([1:length(testDataCurrent{run_dex(i)}.Pressure(start_time_dex(i):end_time_dex(i)))]-1)./(length(testDataCurrent{run_dex(i)}.Pressure(start_time_dex(i):end_time_dex(i)))-1);
+    pressure = testDataCurrent{run_dex(i)}.Pressure(start_time_dex(i):end_time_dex(i))-testDataCurrent{run_dex(i)}.Pressure(1);
+    flow = testDataCurrent{run_dex(i)}.FlowRate_ml_s_(start_time_dex(i):end_time_dex(i))-testDataCurrent{run_dex(i)}.FlowRate_ml_s_(1);
+    resampled_data(2,:,i) = interp1(time_count,pressure,time_norm);
+    resampled_data(3,:,i) = interp1(time_count,flow,time_norm);
+    for j = 1:8
+        forceCol = ['Force' num2str(j)];
+        resampled_data(j+3,:,i) = interp1(time_count,testDataCurrent{run_dex(i)}.(forceCol)(start_time_dex(i):end_time_dex(i))-testDataCurrent{run_dex(i)}.(forceCol)(1),time_norm);
+    end
+end
+
+resampled_avg = zeros(size(resampled_data));
+resampled_std = zeros(size(resampled_data));
+% take averages and stds at each point
+for i = 1 : num_pts
+    for j = 1 : numel(run_dex)/3
+        for k = 2 : size(resampled_data,1)
+            resampled_avg(k,i,j) = mean(resampled_data(k,i,3*j-2:3*j));
+            resampled_std(k,i,j) =  std(resampled_data(k,i,3*j-2:3*j));
+        end
+    end
+end
+
+subplot_dex = [1,7,3,4,5,6,9,10,11,12];
+figure()
+for j = 1 : numel(run_dex)/3
+    for k = 2 : size(resampled_data,1)
+        subplot(2,6,subplot_dex(k-1))
+        hold on
+        boundedline(time_norm, resampled_avg(k,:,j), resampled_std(k,:,j),'cmap',data_Colors(j,:),'alpha');
+        xticks([0,1])
+        xticklabels({'0','1.0'})
+        xtickangle(0)
+        xlabel('Normalized Time (-)')
+        if k-1 == 1
+            ylabel('Pressure (mmHg)')
+            ylim([0,45])
+            yticks(0:5:45)
+        elseif k-1 == 2
+            ylabel('Flow Rate (mL/s)')
+            ylim([0,50])
+            yticks(0:10:50)
+        else
+            ylim([-1.2,0.2])
+            yticks(-1.2:0.2:0.2)
+            if k-1 == 3 || k-1 == 7
+                ylabel('\Delta F (N)');
+            end
+        end
+    end
+end
+subplot(2,6,2)
+plot(time_norm,time_norm)
+axis off
+subplot(2,6,8)
+plot(time_norm,time_norm)
+axis off
+% pubPlot('Width','double','Height',400);
+pubPlot('Width','double','Height',400,'Filename','Raw_Data_Test4','FileExtension',{'.png','.eps'});
