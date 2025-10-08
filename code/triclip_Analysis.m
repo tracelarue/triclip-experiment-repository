@@ -1119,7 +1119,8 @@ end
 
 
 %% Plot and save all 10 
-testDataCurrent = test4data;
+testDataCurrent = test3data;
+run_dex = [10:21];
 % % Test 2 - SP,  AP,     SPAP 
 % start_time_dex = [42,37,48,...
 %                   58,58,51,...
@@ -1129,25 +1130,34 @@ testDataCurrent = test4data;
 %                 348,355,219,...
 %                 342,333,206,...
 %                 373,406,221];
-% % Test 3 - AS,  SP,     SPAS
-% start_time_dex = [72,56,92,...
-%                   40,46,57,...
-%                   39,47,106,...
-%                   42,43,73];
-% end_time_dex = [340,328,374,...
-%                 348,337,293,...
-%                 345,358,330,...
-%                 343,344,315];
-% Test 4 - AS,  AP,     ASAP
-% disease 10:12, AS 13:15, AP 16:18, ASAP  19:21
-start_time_dex = [40,34,80,...
-                  40,37,69,...
-                  50,43,45,...
-                  41,35,97];
-end_time_dex = [342,348,318,...
-                350,356,283,...
-                357,365,314,...
-                362,367,332];
+% end_time_dex = [test2idx(run_dex).segmentEndIdx];
+% start_time_dex = start_time_dex - 30;
+% data_Colors = [COLORS.Diseased; COLORS.SP; COLORS.AP; COLORS.SPAP];
+% Test 3 - AS,  SP,     SPAS
+start_time_dex = [72,56,92,...
+                  40,46,57,...
+                  39,47,106,...
+                  42,43,73];
+end_time_dex = [340,328,374,...
+                348,337,293,...
+                345,358,330,...
+                343,344,315];
+end_time_dex = [test3idx(run_dex).segmentEndIdx];
+start_time_dex = start_time_dex - 30;
+data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.SP; COLORS.SPAS];
+% % Test 4 - AS,  AP,     ASAP
+% % disease 10:12, AS 13:15, AP 16:18, ASAP  19:21
+% start_time_dex = [40,34,80,...
+%                   40,37,69,...
+%                   50,43,45,...
+%                   41,35,97];
+% end_time_dex = [342,348,318,...
+%                 350,356,283,...
+%                 357,365,314,...
+%                 362,367,332];
+% end_time_dex = [test4idx(run_dex).segmentEndIdx];
+% start_time_dex = start_time_dex - 30;
+% data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.AP; COLORS.ASAP];
 % % Test 5 - AS,  AP,     ASAP
 % % disease 10:12, AS 13:15, AP 16:18, ASAP  19:21
 % start_time_dex = [52,44,51,...
@@ -1158,11 +1168,8 @@ end_time_dex = [342,348,318,...
 %                 357,350,212,...
 %                 392,421,272,...
 %                 476,450,275];
-start_time_dex = start_time_dex - 30;
-end_time_dex   = end_time_dex   + 50;
-
-run_dex = [10:21];
-data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.AP; COLORS.ASAP];
+% start_time_dex = start_time_dex - 30;
+% data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.AP; COLORS.ASAP];
 
 % resample data
 num_pts = 1000;
@@ -1200,39 +1207,40 @@ for i = 1 : num_pts
     end
 end
 
-subplot_dex = [1,7,3,4,5,6,9,10,11,12];
+% subplot_dex = [1,7,3,4,5,6,9,10,11,12];
+subplot_dex = [1,6,2,3,4,5,7,8,9,10];
 figure()
 for j = 1 : numel(run_dex)/3
     for k = 2 : size(resampled_data,1)
-        subplot(2,6,subplot_dex(k-1))
+        subplot(2,5,subplot_dex(k-1))
         hold on
         boundedline(time_norm, resampled_avg(k,:,j), resampled_std(k,:,j),'cmap',data_Colors(j,:),'alpha');
         xticks([0,1])
-        xticklabels({'0','1.0'})
+        xticklabels({'0','1'})
         xtickangle(0)
         xlabel('Normalized Time (-)')
         if k-1 == 1
             ylabel('Pressure (mmHg)')
-            ylim([0,45])
-            yticks(0:5:45)
+            ylim([0,40])
+            yticks(0:10:40)
         elseif k-1 == 2
             ylabel('Flow Rate (mL/s)')
-            ylim([0,50])
-            yticks(0:10:50)
+            ylim([0,60])
+            yticks(0:10:60)
         else
-            ylim([-1.2,0.2])
-            yticks(-1.2:0.2:0.2)
+            ylim([-0.5,0.2])
+            yticks(-0.5:0.1:0.2)
             if k-1 == 3 || k-1 == 7
                 ylabel('\Delta F (N)');
             end
         end
     end
 end
-subplot(2,6,2)
-plot(time_norm,time_norm)
-axis off
-subplot(2,6,8)
-plot(time_norm,time_norm)
-axis off
+% subplot(2,6,2)
+% plot(time_norm,time_norm)
+% axis off
+% subplot(2,6,8)
+% plot(time_norm,time_norm)
+% axis off
 % pubPlot('Width','double','Height',400);
-pubPlot('Width','double','Height',400,'Filename','Raw_Data_Test4','FileExtension',{'.png','.eps'});
+pubPlot('Width','double','Height',400,'Filename','Raw_Data_Test3','FileExtension',{'.png','.eps'});
