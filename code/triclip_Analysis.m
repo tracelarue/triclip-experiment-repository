@@ -597,7 +597,7 @@ for interv_idx = 1:length(interventions)
     hold on;
 
     % Error bars (skip NaNs)
-    err = std_force_diff;
+    err = std_force_diff./sqrt(numel(tests_present));
     err(isnan(err)) = 0;
     errorbar(x, avg_force_diff, err, 'k', 'LineWidth', 1.2, 'LineStyle', 'none');
 
