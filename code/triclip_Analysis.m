@@ -11,7 +11,7 @@ scriptPath = mfilename('fullpath');
 projectRoot = fileparts(scriptDir);
 
 % Build data paths
-dataDir = fullfile(projectRoot, 'Data');
+dataDir = fullfile(projectRoot, 'data');
 testIdxDir = fullfile(dataDir, 'testidx');
 
 % -------------------------- Load stable region index data for each test
@@ -22,6 +22,9 @@ load(fullfile(testIdxDir, 'test4idx.mat'));
 load(fullfile(testIdxDir, 'test5idx.mat'));
 load(fullfile(testIdxDir, 'test6idx.mat'));
 load(fullfile(testIdxDir, 'test7idx.mat'));
+load(fullfile(testIdxDir, 'test8idx.mat'));
+load(fullfile(testIdxDir, 'test9idx.mat'));
+load(fullfile(testIdxDir, 'test10idx.mat'));
 
 
 % -------------------------- Load and preprocess data
@@ -34,7 +37,10 @@ folderPaths = {
     fullfile(dataDir, '07_16_25'),
     fullfile(dataDir, '07_23_25'),
     fullfile(dataDir, '08_05_25'),
-    fullfile(dataDir, '08_07_25')
+    fullfile(dataDir, '08_07_25'),
+    fullfile(dataDir, '01_14_26'),
+    fullfile(dataDir, '01_21_26'),
+    fullfile(dataDir, '01_23_26')
 };
 
 % Initialize cell arrays to store data
@@ -156,22 +162,93 @@ disp('Average data calculation complete')
 
 % Data Indices based on the order of the files in the folders
 %        13:15  16:18  19:21  22:24       
-% Test 1 - AS,  AP,     ASAP        AP Data is bad
-% Test 2 - SP,  AP,     SPAP 
-% Test 3 - AS,  SP,     SPAS
-% Test 4 - AS,  AP,     ASAP
-% Test 5 - AS,  AP,     ASAP
-% Test 6 - SP,  SPAP,   SPAS,   AP
-% Test 7 - SP,  SPAP,   SPAS,   AP
+% Test 1 -  AS,  AP,     ASAP                    # AP Data is bad
+% Test 2 -  SP,  AP,     SPAP 
+% Test 3 -  AS,  SP,     SPAS
+% Test 4 -  AS,  AP,     ASAP
+% Test 5 -  AS,  AP,     ASAP
+% Test 6 -  SP,  SPAP,   SPAS,  AP
+% Test 7 -  SP,  SPAP,   SPAS,  AP
+% Test 8 -  SP,  SPAS,   AS                      # AS didn't work   
+% Test 9 -  SP,  SPAP,   AP,    ASAP,   AS
+% Test 10 - AS,  ASAP,   AP,    SPAP,   SP
 
-healthy_data = [test1avg(1:9), test2avg(1:9), test3avg(1:9), test4avg(1:9), test5avg(1:9), test6avg(1:9), test7avg(1:9) ];
-diseased_data = [test1avg(10:12), test2avg(10:12), test3avg(10:12), test4avg(10:12), test5avg(10:12), test6avg(10:12), test7avg(10:12)];
-AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:15)];
-AP_data= [test2avg(16:18), test4avg(16:18), test5avg(16:18), test6avg(22:24), test7avg(22:24)];
-SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15)];
-ASAP_data= [test1avg(19:21), test4avg(19:21), test5avg(19:21)];
-SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21)];
-SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18)];
+healthy_data = [test1avg(1:9), test2avg(1:9), test3avg(1:9), test4avg(1:9), test5avg(1:9), test6avg(1:9), test7avg(1:9), test8avg(1:9), test9avg(1:9), test10avg([1:3,7:9])];
+diseased_data = [test1avg(10:12), test2avg(10:12), test3avg(10:12), test4avg(10:12), test5avg(10:12), test6avg(10:12), test7avg(10:12), test8avg(10:12), test9avg(10:12), test10avg(10:12)];
+AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27), test10avg(13:14)];
+AP_data= [test2avg(16:18), test4avg(16:18), test5avg(16:18), test6avg(22:24), test7avg(22:24), test9avg(19:21), test10avg(19:21)];
+SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27)];
+ASAP_data= [test1avg(19:21), test4avg(19:21), test5avg(19:21), test9avg(22:24), test10avg(16:18)];
+SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18])];
+SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), test10avg(22:24)];
+
+% NOTES:
+% Test 8 - exclude 04-06, 17. 10-12 and 16-18 also look a little sus
+% Test 10 - 15, 17, 19-21 look like noise
+
+% Which tests participate in each intervention (cell array, 1 row per intervention)
+test_participation = {
+    [1:10];          % Diseased
+    [1,3,4,5,8,9,10];      % AS
+    [2,4,5,6,7,9,10];      % AP
+    [2,3,6,7,8,9,10];      % SP
+    [1,4,5,9,10];          % ASAP
+    [3,6,7,8];             % SPAS
+    [2,6,7,9,10];          % SPAP
+};
+
+force_test_participation = {test_participation{2:end}};
+
+% % Tests with flow difference < 5
+% % AS: 8, 10
+% % AP: 2, 9
+% % ASAP: 4, 10 
+% AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27)];
+% AP_data= [test4avg(16:18), test5avg(16:18), test6avg(22:24), test7avg(22:24), test10avg(19:21)];
+% SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27)];
+% ASAP_data= [test1avg(19:21), test5avg(19:21), test9avg(22:24)];
+% SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18])];
+% SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), test10avg(22:24)];
+% 
+% % NOTES:
+% % Test 8 - exclude 04-06, 17. 10-12 and 16-18 also look a little sus
+% % Test 10 - 15, 17, 19-21 look like noise
+% 
+% % Which tests participate in each intervention (cell array, 1 row per intervention)
+% test_participation = {
+%     [1:10];          % Diseased
+%     [1,3,4,5,9];      % AS
+%     [4,5,6,7,10];      % AP
+%     [2,3,6,7,8,9,10];      % SP
+%     [1,5,9];          % ASAP
+%     [3,6,7,8];             % SPAS
+%     [2,6,7,9,10];          % SPAP
+% };
+
+% % Tests with flow difference < 10
+% % AS: 3, 8, 10
+% % AP: 2, 4, 9, 10
+% % SP: 3, 6
+% % ASAP: 4, 9, 10 
+% AS_data= [test1avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27)];
+% AP_data= [test5avg(16:18), test6avg(22:24), test7avg(22:24)];
+% SP_data= [test2avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27)];
+% ASAP_data= [test1avg(19:21), test5avg(19:21)];
+% SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18])];
+% SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), test10avg(22:24)];
+% 
+% test_participation = {
+%     [1:10];          % Diseased
+%     [1,4,5,9];      % AS
+%     [5,6,7];      % AP
+%     [2,7,8,9,10];      % SP
+%     [1,5];          % ASAP
+%     [3,6,7,8];             % SPAS
+%     [2,6,7,9,10];          % SPAP
+% };
+% 
+% force_test_participation = {test_participation{2:end}};
+
 
 %% Flow Rate Bar Graph by Intervention Type
 % Hex to RGB conversion function
@@ -244,21 +321,9 @@ AS_rect_color = COLORS.AS;
 AP_rect_color = COLORS.AP;
 SP_rect_color = COLORS.SP;
 
-
 % Define interventions and their corresponding data
 interventions = {'Dis', 'AS', 'AP', 'SP ', 'ASAP', 'SPAS', 'SPAP'};
 intervention_data = {diseased_data, AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
-
-% Which tests participate in each intervention (cell array, 1 row per intervention)
-test_participation = {
-    [1:7];          % Diseased
-    [1,3,4,5];      % AS
-    [2,4,5,6,7];    % AP
-    [2,3,6,7];      % SP
-    [1,4,5];        % ASAP
-    [3,6,7];        % SPAS
-    [2,6,7];        % SPAP
-};
 
 % Preallocate arrays for means and stds
 num_interv = numel(interventions);
@@ -291,19 +356,6 @@ end
 % Plot setup
 figure('Position', [100, 100, 1200, 700]);
 subplot(1,2,1)
-
-%{
-Old color definitions - now using centralized colors from top of script
-bar_colors = [ ...
-    0.2 0.2 0.2;        % Diseased - dark gray
-    1.0 0.4 0.0;        % AS - #FF6700 orange
-    0.95 0.16 0.31;     % AP - #F14F50 red
-    0.71 0.04 0.45;     % SP - #B50A72 magenta
-    0.39 0.22 0.58;     % ASAP - #643894 purple
-    0.32 0.38 0.93;     % SPAS - #5260EE blue
-    0.29 0.45 0.72;     % SPAP - #4A73B8 teal blue
-];
-%}
 
 x = 1:num_interv;
 b = bar(x, avg_flow, 'FaceColor', 'flat');
@@ -404,17 +456,6 @@ hold off;
 interventions = {'Dis', 'AS', 'AP', 'SP ', 'ASAP', 'SPAS', 'SPAP'};
 intervention_data = {diseased_data, AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
 
-% Which tests participate in each intervention (cell array, 1 row per intervention)
-test_participation = {
-    [1:7];      % Diseased: all tests
-    [1,3,4,5];
-    [2,4,5,6,7];
-    [2,3,6,7];
-    [1,4,5];
-    [3,6,7];
-    [2,6,7]
-};
-
 % Preallocate arrays for means and stds
 num_interv = numel(interventions);
 avg_pressure = zeros(1, num_interv);
@@ -506,14 +547,6 @@ pubPlot('Width','double','Height',300,'Filename','Intervention','FileExtension',
 % List of intervention types to plot (excluding 'Diseased')
 interventions = {'AS', 'AP', 'SP', 'ASAP', 'SPAS', 'SPAP'};
 force_data = {AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
-force_test_participation = {
-    [1,3,4,5];      % AS
-    [2,4,5,6,7];    % AP
-    [2,3,6,7];      % SP
-    [1,4,5];        % ASAP
-    [3,6,7];        % SPAS
-    [2,6,7]         % SPAP
-};
 
 %{
 Old force_colors definition - now using centralized colors from top of script
@@ -1017,9 +1050,9 @@ pubPlot('Width','double','Height',400,'Filename','ForceDiff_Contour','FileExtens
 
 
 %% Export Force Differences Relative to Diseased Data
-%{
+
 % Initialize empty structure array for collecting force difference rows
-diff_rows = struct('Intervention', {}, 'Test', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, 'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {});
+diff_rows = struct('Test', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, 'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {});
 
 % Get diseased data reference for each test
 diseased_reference = containers.Map('KeyType', 'int32', 'ValueType', 'any');
@@ -1052,6 +1085,15 @@ for i = 1:numel(intervention_names)
         % Get intervention data for this test
         interv_mask = [data.Test] == tt;
         interv_data = data(interv_mask);
+
+        % number of clips
+        if strcmp(intervention_names{i},'AS') | strcmp(intervention_names{i},'AS') | strcmp(intervention_names{i},'AS')
+            numClips = 1;
+        elseif strcmp(intervention_names{i},'ASAP') | strcmp(intervention_names{i},'SPAS') | strcmp(intervention_names{i},'SPAP')
+            numClips = 2;
+        else
+            numClips = 0;
+        end
         
         % Get diseased reference data for this test
         diseased_ref = diseased_reference(tt);
@@ -1084,8 +1126,9 @@ for i = 1:numel(intervention_names)
             force_diff = interv_force_mean - diseased_force_mean;
             
             diff_rows(end+1) = struct( ...
-                'Intervention', intervention_names{i}, ...
                 'Test', tt, ...
+                'Intervention', intervention_names{i}, ...
+                'NumClips', numClips,...
                 'Pressure', interv_pressure_mean, ...
                 'FlowRate', interv_flow_mean, ...
                 'Pin', pin, ...
@@ -1114,62 +1157,114 @@ if ~isempty(diff_rows)
 else
     warning('No force difference rows collected for export; no file written.');
 end
-%}
-
 
 
 %% Plot and save all 10 
-testDataCurrent = test3data;
+testDataCurrent = test9data;
+dataNum = 9;
 run_dex = [10:21];
-% % Test 2 - SP,  AP,     SPAP 
-% start_time_dex = [42,37,48,...
-%                   58,58,51,...
-%                   47,42,46,...
-%                   40,52,55];
-% end_time_dex = [327,328,323,...
-%                 348,355,219,...
-%                 342,333,206,...
-%                 373,406,221];
-% end_time_dex = [test2idx(run_dex).segmentEndIdx];
-% start_time_dex = start_time_dex - 30;
-% data_Colors = [COLORS.Diseased; COLORS.SP; COLORS.AP; COLORS.SPAP];
-% Test 3 - AS,  SP,     SPAS
-start_time_dex = [72,56,92,...
-                  40,46,57,...
-                  39,47,106,...
-                  42,43,73];
-end_time_dex = [340,328,374,...
-                348,337,293,...
-                345,358,330,...
-                343,344,315];
-end_time_dex = [test3idx(run_dex).segmentEndIdx];
-start_time_dex = start_time_dex - 30;
-data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.SP; COLORS.SPAS];
-% % Test 4 - AS,  AP,     ASAP
-% % disease 10:12, AS 13:15, AP 16:18, ASAP  19:21
-% start_time_dex = [40,34,80,...
-%                   40,37,69,...
-%                   50,43,45,...
-%                   41,35,97];
-% end_time_dex = [342,348,318,...
-%                 350,356,283,...
-%                 357,365,314,...
-%                 362,367,332];
-% end_time_dex = [test4idx(run_dex).segmentEndIdx];
-% start_time_dex = start_time_dex - 30;
-% data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.AP; COLORS.ASAP];
-% % Test 5 - AS,  AP,     ASAP
-% % disease 10:12, AS 13:15, AP 16:18, ASAP  19:21
-% start_time_dex = [52,44,51,...
-%                   47,51,42,...
-%                   46,45,52,...
-%                   52,57,42];
-% end_time_dex = [377,366,204,...
-%                 357,350,212,...
-%                 392,421,272,...
-%                 476,450,275];
-% start_time_dex = start_time_dex - 30;
-% data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.AP; COLORS.ASAP];
+
+if dataNum == 2
+    % Test 2 - SP,  AP,     SPAP
+    start_time_dex = [42,37,48,...
+        58,58,51,...
+        47,42,46,...
+        40,52,55];
+    end_time_dex = [327,328,323,...
+        348,355,219,...
+        342,333,206,...
+        373,406,221];
+    end_time_dex = [test2idx(run_dex).segmentEndIdx];
+    start_time_dex = start_time_dex - 30;
+    data_Colors = [COLORS.Diseased; COLORS.SP; COLORS.AP; COLORS.SPAP];
+elseif dataNum == 3
+    % Test 3 - AS,  SP,     SPAS
+    start_time_dex = [72,56,92,...
+        40,46,57,...
+        39,47,106,...
+        42,43,73];
+    end_time_dex = [340,328,374,...
+        348,337,293,...
+        345,358,330,...
+        343,344,315];
+    end_time_dex = [test3idx(run_dex).segmentEndIdx];
+    start_time_dex = start_time_dex - 30;
+    data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.SP; COLORS.SPAS];
+elseif dataNum == 4
+    % Test 4 - AS,  AP,     ASAP
+    % disease 10:12, AS 13:15, AP 16:18, ASAP  19:21
+    start_time_dex = [40,34,80,...
+        40,37,69,...
+        50,43,45,...
+        41,35,97];
+    end_time_dex = [342,348,318,...
+        350,356,283,...
+        357,365,314,...
+        362,367,332];
+    end_time_dex = [test4idx(run_dex).segmentEndIdx];
+    start_time_dex = start_time_dex - 30;
+    data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.AP; COLORS.ASAP];
+elseif dataNum == 5
+    % Test 5 - AS,  AP,     ASAP
+    % disease 10:12, AS 13:15, AP 16:18, ASAP  19:21
+    start_time_dex = [52,44,51,...
+        47,51,42,...
+        46,45,52,...
+        52,57,42];
+    end_time_dex = [377,366,204,...
+        357,350,212,...
+        392,421,272,...
+        476,450,275];
+    start_time_dex = start_time_dex - 30;
+    data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.AP; COLORS.ASAP];
+elseif dataNum == 8
+    % Test 8 -  SP,  SPAS,   AS 
+    % disease 10:12, SP 13:15, SPAS 16:18, AS  19:21
+    start_time_dex = [46,43,73,...
+        58,50,65,...
+        47,36,41,...
+        45,46,67];
+    end_time_dex = [348,359,478,...
+        408,350,463,...
+        396,397,410,...
+        417,368,425];
+    start_time_dex = start_time_dex - 30;
+    data_Colors = [COLORS.Diseased; COLORS.SP; COLORS.SPAS; COLORS.AS];
+elseif dataNum == 9
+    % Test 9 -  SP,  SPAP,   AP,    ASAP,   AS
+    run_dex = [10:27];
+    start_time_dex = [35,44,50,...
+        32,49,35,...
+        45,44,46,...
+        44,41,72,...
+        29,40,51,...
+        47,45,41];
+    end_time_dex = [404,355,280,...
+        386,400,323,...
+        455,386,334,...
+        404,348,363,...
+        367,372,293,...
+        379,389,313];
+    start_time_dex = start_time_dex - 20;
+    data_Colors = [COLORS.Diseased; COLORS.SP; COLORS.SPAP; COLORS.AP; COLORS.ASAP; COLORS.AS];
+elseif dataNum == 10
+    % Test 10 - AS,  ASAP,   AP,    SPAP,   SP 
+    run_dex = [10:27];
+    start_time_dex = [36,36,46,...
+        41,40,73,...
+        38,38,87,...
+        28,42,80,...
+        27,38,46,...
+        39,42,52];
+    end_time_dex = [319,347,289,...
+        320,323,323,...
+        317,330,322,...
+        319,344,308,...
+        382,335,353,...
+        349,290,328];
+    start_time_dex = start_time_dex - 20;
+    data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.ASAP; COLORS.AP; COLORS.SPAP; COLORS.SP];
+end
 
 % resample data
 num_pts = 1000;
@@ -1221,15 +1316,51 @@ for j = 1 : numel(run_dex)/3
         xlabel('Normalized Time (-)')
         if k-1 == 1
             ylabel('Pressure (mmHg)')
-            ylim([0,40])
-            yticks(0:10:40)
+            if dataNum == 3
+                ylim([0,40])
+                yticks(0:10:40)
+            else
+                ylim([0,40])
+                yticks(0:10:40)
+            end
         elseif k-1 == 2
             ylabel('Flow Rate (mL/s)')
-            ylim([0,60])
-            yticks(0:10:60)
+            if dataNum == 3
+                ylim([0,60])
+                yticks(0:10:60)
+            elseif dataNum == 8
+                ylim([0,70])
+                yticks(0:10:70)
+            else
+                ylim([0,60])
+                yticks(0:10:60)
+            end
         else
-            ylim([-0.5,0.2])
-            yticks(-0.5:0.1:0.2)
+            if dataNum == 3
+                ylim([-0.5,0.2])
+                yticks(-0.5:0.1:0.2)
+            elseif dataNum == 8
+                if k-1 == 5
+                    legend('','Diseased','','SP','','SPAS','','AS','')
+                end
+                ylim([-1,0.5])
+                yticks(-1:0.25:0.5)
+            elseif dataNum == 9
+                if k-1 == 5
+                    legend('','Diseased','','SP','','SPAP','','AP','','ASAP','','AS')
+                end
+                ylim([-1,0.5])
+                yticks(-1:0.25:0.5)
+            elseif dataNum == 10
+                if k-1 == 5
+                    legend('','Diseased','','AS','','ASAP','','AP','','SPAP','','SP')
+                end
+                ylim([-1,0.5])
+                yticks(-1:0.25:0.5)
+            else
+                ylim([-0.5,0.2])
+                yticks(-0.5:0.1:0.2)
+            end
             if k-1 == 3 || k-1 == 7
                 ylabel('\Delta F (N)');
             end
@@ -1242,5 +1373,10 @@ end
 % subplot(2,6,8)
 % plot(time_norm,time_norm)
 % axis off
-% pubPlot('Width','double','Height',400);
-pubPlot('Width','double','Height',400,'Filename','Raw_Data_Test3','FileExtension',{'.png','.eps'});
+
+% if 0
+%     pubPlot('Width','double','Height',400,'Filename',['Raw_Data_Test',num2str(dataNum)],'FileExtension',{'.png','.eps'});
+% else
+%     pubPlot('Width','double','Height',400);
+% end
+
