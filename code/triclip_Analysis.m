@@ -25,7 +25,7 @@ load(fullfile(testIdxDir, 'test7idx.mat'));
 load(fullfile(testIdxDir, 'test8idx.mat'));
 load(fullfile(testIdxDir, 'test9idx.mat'));
 load(fullfile(testIdxDir, 'test10idx.mat'));
-
+load(fullfile(testIdxDir, 'test11idx.mat'));
 
 % -------------------------- Load and preprocess data
 
@@ -40,7 +40,8 @@ folderPaths = {
     fullfile(dataDir, '08_07_25'),
     fullfile(dataDir, '01_14_26'),
     fullfile(dataDir, '01_21_26'),
-    fullfile(dataDir, '01_23_26')
+    fullfile(dataDir, '01_23_26'),
+    fullfile(dataDir, '01_30_26')
 };
 
 % Initialize cell arrays to store data
@@ -162,25 +163,63 @@ disp('Average data calculation complete')
 
 % Data Indices based on the order of the files in the folders
 %        13:15  16:18  19:21  22:24       
-% Test 1 -  AS,  AP,     ASAP                    # AP Data is bad
+% Test 1 -  AS,  AP,     ASAP                    # AP Data is bad, damaged septal leaflet on AS removal
 % Test 2 -  SP,  AP,     SPAP 
-% Test 3 -  AS,  SP,     SPAS
-% Test 4 -  AS,  AP,     ASAP
+% Test 3 -  AS,  SP,     SPAS                    # ripped small chunk of anterior leaflet
+% Test 4 -  AS,  AP,     ASAP                    # lost some anterior leaflet, restarted
 % Test 5 -  AS,  AP,     ASAP
 % Test 6 -  SP,  SPAP,   SPAS,  AP
-% Test 7 -  SP,  SPAP,   SPAS,  AP
+% Test 7 -  SP,  SPAP,   SPAS,  AP               # unreliable healhty flow data, lost some septal leafelt on AS removal
 % Test 8 -  SP,  SPAS,   AS                      # AS didn't work   
 % Test 9 -  SP,  SPAP,   AP,    ASAP,   AS
 % Test 10 - AS,  ASAP,   AP,    SPAP,   SP
+% Test 11 - SP,  SPAS,   AS
 
-healthy_data = [test1avg(1:9), test2avg(1:9), test3avg(1:9), test4avg(1:9), test5avg(1:9), test6avg(1:9), test7avg(1:9), test8avg(1:9), test9avg(1:9), test10avg([1:3,7:9])];
-diseased_data = [test1avg(10:12), test2avg(10:12), test3avg(10:12), test4avg(10:12), test5avg(10:12), test6avg(10:12), test7avg(10:12), test8avg(10:12), test9avg(10:12), test10avg(10:12)];
-AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27), test10avg(13:14)];
+healthy_data = [test1avg(1:9), test2avg(1:9), test3avg(1:9), test4avg(1:9), test5avg(1:9), test6avg(1:9), test7avg(1:9), test8avg(1:9), test9avg(1:9), test10avg([1:3,7:9]), test11avg(1:9)];
+diseased_data = [test1avg(10:12), test2avg(10:12), test3avg(10:12), test4avg(10:12), test5avg(10:12), test6avg(10:12), test7avg(10:12), test8avg(10:12), test9avg(10:12), test10avg(10:12), test11avg(10:12)];
+AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27), test10avg(13:14), test11avg(19:21)];
 AP_data= [test2avg(16:18), test4avg(16:18), test5avg(16:18), test6avg(22:24), test7avg(22:24), test9avg(19:21), test10avg(19:21)];
-SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27)];
+SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27), test11avg(13:15)];
 ASAP_data= [test1avg(19:21), test4avg(19:21), test5avg(19:21), test9avg(22:24), test10avg(16:18)];
-SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18])];
+SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18]), test11avg(16:18)];
 SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), test10avg(22:24)];
+
+test_order = {
+    {'AS','ASAP','AP'};
+    {'AP','SPAP','SP'};
+    {'SP','SPAS','AS'};
+    {'AS','ASAP','AP'};
+    {'AS','ASAP','AP'};
+    {'SP','SPAS','SPAP','AP'};
+    {'SP','SPAS','SPAP','AP'};
+    {'SP','SPAS','AS'};
+    {'SP','SPAP','AP','ASAP','AS'};
+    {'AS','ASAP','AP','SPAP','SP'};
+    {'SP','SPAS','AS'}
+    };
+
+% treatment procedure
+% 1: AS -> ASAP -> AP
+% 2: SP -> SPAS -> AS
+% 3: AP -> SPAP -> SP
+% 4: SP -> SPAP -> AP
+% 5: AP -> ASAP -> AS
+% 6: SP -> SPAS -> SPAP -> AP
+% 7: SP -> SPAP -> AP -> ASAP -> AS
+% 8: AS -> ASAP -> AP -> SPAP -> SP
+test_procedure = {
+    [1]; % Test 1
+    [3]; % Test 2
+    [2]; % Test 3
+    [1]; % Test 4
+    [1]; % Test 5
+    [6]; % Test 6
+    [6]; % Test 7
+    [2]; % Test 8
+    [7]; %[4, 5]; % Test 9
+    [8];%[1, 3]; % Test 10
+    [2]  % Test 11
+    };
 
 % NOTES:
 % Test 8 - exclude 04-06, 17. 10-12 and 16-18 also look a little sus
@@ -188,31 +227,25 @@ SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), 
 
 % Which tests participate in each intervention (cell array, 1 row per intervention)
 test_participation = {
-    [1:10];          % Diseased
-    [1,3,4,5,8,9,10];      % AS
+    [1:11];          % Diseased
+    [1,3,4,5,8,9,10,11];      % AS
     [2,4,5,6,7,9,10];      % AP
-    [2,3,6,7,8,9,10];      % SP
+    [2,3,6,7,8,9,10,11];      % SP
     [1,4,5,9,10];          % ASAP
-    [3,6,7,8];             % SPAS
+    [3,6,7,8,11];             % SPAS
     [2,6,7,9,10];          % SPAP
 };
-
-force_test_participation = {test_participation{2:end}};
 
 % % Tests with flow difference < 5
 % % AS: 8, 10
 % % AP: 2, 9
 % % ASAP: 4, 10 
-% AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27)];
+% AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27), test10avg(13:14), test11avg(19:21)];
 % AP_data= [test4avg(16:18), test5avg(16:18), test6avg(22:24), test7avg(22:24), test10avg(19:21)];
-% SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27)];
+% SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27), test11avg(13:15)];
 % ASAP_data= [test1avg(19:21), test5avg(19:21), test9avg(22:24)];
-% SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18])];
+% SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18]), test11avg(16:18)];
 % SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), test10avg(22:24)];
-% 
-% % NOTES:
-% % Test 8 - exclude 04-06, 17. 10-12 and 16-18 also look a little sus
-% % Test 10 - 15, 17, 19-21 look like noise
 % 
 % % Which tests participate in each intervention (cell array, 1 row per intervention)
 % test_participation = {
@@ -228,9 +261,10 @@ force_test_participation = {test_participation{2:end}};
 % % Tests with flow difference < 10
 % % AS: 3, 8, 10
 % % AP: 2, 4, 9, 10
-% % SP: 3, 6
+% % SP: 3, 6, 11
 % % ASAP: 4, 9, 10 
-% AS_data= [test1avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27)];
+% % SPAS: 11
+% AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27), test10avg(13:14), test11avg(19:21)];
 % AP_data= [test5avg(16:18), test6avg(22:24), test7avg(22:24)];
 % SP_data= [test2avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27)];
 % ASAP_data= [test1avg(19:21), test5avg(19:21)];
@@ -246,8 +280,9 @@ force_test_participation = {test_participation{2:end}};
 %     [3,6,7,8];             % SPAS
 %     [2,6,7,9,10];          % SPAP
 % };
-% 
-% force_test_participation = {test_participation{2:end}};
+
+
+force_test_participation = {test_participation{2:end}};
 
 
 %% Flow Rate Bar Graph by Intervention Type
@@ -1052,7 +1087,8 @@ pubPlot('Width','double','Height',400,'Filename','ForceDiff_Contour','FileExtens
 %% Export Force Differences Relative to Diseased Data
 
 % Initialize empty structure array for collecting force difference rows
-diff_rows = struct('Test', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, 'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {});
+diff_rows = struct('Test', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, ...
+    'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {});
 
 % Get diseased data reference for each test
 diseased_reference = containers.Map('KeyType', 'int32', 'ValueType', 'any');
@@ -1087,12 +1123,33 @@ for i = 1:numel(intervention_names)
         interv_data = data(interv_mask);
 
         % number of clips
-        if strcmp(intervention_names{i},'AS') | strcmp(intervention_names{i},'AS') | strcmp(intervention_names{i},'AS')
+        if strcmp(intervention_names{i},'AS') | strcmp(intervention_names{i},'AP') | strcmp(intervention_names{i},'SP')
             numClips = 1;
         elseif strcmp(intervention_names{i},'ASAP') | strcmp(intervention_names{i},'SPAS') | strcmp(intervention_names{i},'SPAP')
             numClips = 2;
         else
             numClips = 0;
+        end
+
+        % clip order and treatment
+        if numClips == 0
+            ClipOrder = 'None';
+            Treatment = 0;
+        elseif numClips == 2
+            ClipOrder = 'Multiple';
+            Treatment = test_procedure{tt};
+        else
+            ClipOrder = find(strcmp(test_order{tt},intervention_names{i}));
+            if ClipOrder == 1
+                ClipOrder = 'First';
+            elseif ClipOrder == 3
+                ClipOrder = 'Second';
+            elseif ClipOrder == 4
+                ClipOrder = 'Second';
+            elseif ClipOrder == 5
+                ClipOrder = 'Third';
+            end
+            Treatment = test_procedure{tt};
         end
         
         % Get diseased reference data for this test
@@ -1135,7 +1192,9 @@ for i = 1:numel(intervention_names)
                 'Force', interv_force_mean, ...
                 'ForceDifference', force_diff, ...
                 'PressureDifference', pressure_diff, ...
-                'FlowDifference', flow_diff ...
+                'FlowDifference', flow_diff, ...
+                'ClipOrder', ClipOrder, ...
+                'Treatment', Treatment ...
             );
         end
     end
@@ -1160,8 +1219,8 @@ end
 
 
 %% Plot and save all 10 
-testDataCurrent = test9data;
-dataNum = 9;
+testDataCurrent = test11data;
+dataNum = 11;
 run_dex = [10:21];
 
 if dataNum == 2
@@ -1264,6 +1323,19 @@ elseif dataNum == 10
         349,290,328];
     start_time_dex = start_time_dex - 20;
     data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.ASAP; COLORS.AP; COLORS.SPAP; COLORS.SP];
+elseif dataNum == 11
+    % Test 8 -  SP,  SPAS,   AS
+    % disease 10:12, SP 13:15, SPAS 16:18, AS  19:21
+    start_time_dex = [49,38, 70,...
+        42, 42, 46,...
+        53, 23, 42,...
+        43, 46, 45];
+    end_time_dex = [340, 342, 292,...
+        322, 325, 361,...
+        332, 340, 326,...
+        324, 332, 304];
+    start_time_dex = start_time_dex - 20;
+    data_Colors = [COLORS.Diseased; COLORS.SP; COLORS.SPAS; COLORS.AS];
 end
 
 % resample data
@@ -1357,6 +1429,12 @@ for j = 1 : numel(run_dex)/3
                 end
                 ylim([-1,0.5])
                 yticks(-1:0.25:0.5)
+             elseif dataNum == 11
+                if k-1 == 5
+                    legend('','Diseased','','SP','','SPAS','','AS','')
+                end
+                ylim([-.75,0.25])
+                yticks(-0.75:0.25:0.25)
             else
                 ylim([-0.5,0.2])
                 yticks(-0.5:0.1:0.2)
