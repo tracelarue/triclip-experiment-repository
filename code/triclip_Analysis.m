@@ -26,6 +26,7 @@ load(fullfile(testIdxDir, 'test8idx.mat'));
 load(fullfile(testIdxDir, 'test9idx.mat'));
 load(fullfile(testIdxDir, 'test10idx.mat'));
 load(fullfile(testIdxDir, 'test11idx.mat'));
+load(fullfile(testIdxDir, 'test12idx.mat'));
 
 % -------------------------- Load and preprocess data
 
@@ -41,7 +42,8 @@ folderPaths = {
     fullfile(dataDir, '01_14_26'),
     fullfile(dataDir, '01_21_26'),
     fullfile(dataDir, '01_23_26'),
-    fullfile(dataDir, '01_30_26')
+    fullfile(dataDir, '01_30_26'),
+    fullfile(dataDir, '02_04_26')
 };
 
 % Initialize cell arrays to store data
@@ -161,28 +163,52 @@ end
 
 disp('Average data calculation complete')
 
+% NOTES:
+% Test 1 -  AP Data is bad, damaged septal leaflet on AS removal
+%           exclude 16-18 (AP) for noise
+% Test 2 -  
+% Test 3 -  ripped small chunk of anterior leaflet, 
+%           consistent noise/vibration 10-12, 16-18
+% Test 4 -  lost some anterior leaflet, restarted and re-ran disease
+% Test 5 -  exclude 15 for creep in #7, little bit of noise 10-12
+% Test 6 -  10-12 disease doesn't plateau nicely
+%           exclude 1-4 due to noise
+% Test 7 -  unreliable healhty flow data, lost some septal leafelt on AS removal
+%           22-24 doesn't plateau that nice, small noise 10-12, 19-21
+% Test 8 -  AS didn't work 
+%           exclude 19-21, 17, 04-06 for noise. 10-12 and 16-18 also look a little sus
+% Test 9 - 
+% Test 10 - exclude 15, 17. 16-21 look like noise, very small values
+% Test 11 - 
+% Test 12 - 19 has some noise on pin #7
+% Test 13 - 
+
 % Data Indices based on the order of the files in the folders
-%        13:15  16:18  19:21  22:24       
-% Test 1 -  AS,  AP,     ASAP                    # AP Data is bad, damaged septal leaflet on AS removal
-% Test 2 -  SP,  AP,     SPAP 
-% Test 3 -  AS,  SP,     SPAS                    # ripped small chunk of anterior leaflet
-% Test 4 -  AS,  AP,     ASAP                    # lost some anterior leaflet, restarted
+%         13:15 16:18    19:21  22:24       
+% Test 1 -  AS,  AP,     ASAP
+% Test 2 -  SP,  AP,     SPAP
+% Test 3 -  AS,  SP,     SPAS
+% Test 4 -  AS,  AP,     ASAP
 % Test 5 -  AS,  AP,     ASAP
 % Test 6 -  SP,  SPAP,   SPAS,  AP
-% Test 7 -  SP,  SPAP,   SPAS,  AP               # unreliable healhty flow data, lost some septal leafelt on AS removal
-% Test 8 -  SP,  SPAS,   AS                      # AS didn't work   
+% Test 7 -  SP,  SPAP,   SPAS,  AP 
+% Test 8 -  SP,  SPAS,   AS 
 % Test 9 -  SP,  SPAP,   AP,    ASAP,   AS
 % Test 10 - AS,  ASAP,   AP,    SPAP,   SP
 % Test 11 - SP,  SPAS,   AS
+% Test 12 - AS,  ASAP,   AP,    SPAP,   SP
+% Test 13 - 
 
-healthy_data = [test1avg(1:9), test2avg(1:9), test3avg(1:9), test4avg(1:9), test5avg(1:9), test6avg(1:9), test7avg(1:9), test8avg(1:9), test9avg(1:9), test10avg([1:3,7:9]), test11avg(1:9)];
-diseased_data = [test1avg(10:12), test2avg(10:12), test3avg(10:12), test4avg(10:12), test5avg(10:12), test6avg(10:12), test7avg(10:12), test8avg(10:12), test9avg(10:12), test10avg(10:12), test11avg(10:12)];
-AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:15), test9avg(25:27), test10avg(13:14), test11avg(19:21)];
-AP_data= [test2avg(16:18), test4avg(16:18), test5avg(16:18), test6avg(22:24), test7avg(22:24), test9avg(19:21), test10avg(19:21)];
-SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27), test11avg(13:15)];
-ASAP_data= [test1avg(19:21), test4avg(19:21), test5avg(19:21), test9avg(22:24), test10avg(16:18)];
+healthy_data = [test1avg(1:9), test2avg(1:9), test3avg(1:9), test4avg(1:9), test5avg(1:9), test6avg(5:9), test7avg(1:9), test8avg([1:3,7:9]), test9avg(1:9), test10avg([1:3,7:9]), test11avg(1:9), test12avg(1:9)];
+diseased_data = [test1avg(10:12), test2avg(10:12), test3avg(10:12), test4avg(10:12), test5avg(10:12), test6avg(10:12), test7avg(10:12), test8avg(10:12), test9avg(10:12), test10avg(10:12), test11avg(10:12), test12avg(10:12)];
+AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:14), test9avg(25:27), test10avg(13:14), test11avg(19:21), test12avg(13:15)];
+AP_data= [test2avg(16:18), test4avg(16:18), test5avg(16:18), test6avg(22:24), test7avg(22:24), test9avg(19:21), test10avg(19:21), test12avg(19:21)];
+SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27), test11avg(13:15), test12avg(25:27)];
+ASAP_data= [test1avg(19:21), test4avg(19:21), test5avg(19:21), test9avg(22:24), test10avg([16,18]), test12avg(16:18)];
 SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18]), test11avg(16:18)];
-SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), test10avg(22:24)];
+SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), test10avg(22:24), test12avg(22:24)];
+
+
 
 test_order = {
     {'AS','ASAP','AP'};
@@ -195,7 +221,8 @@ test_order = {
     {'SP','SPAS','AS'};
     {'SP','SPAP','AP','ASAP','AS'};
     {'AS','ASAP','AP','SPAP','SP'};
-    {'SP','SPAS','AS'}
+    {'SP','SPAS','AS'};
+    {'AS','ASAP','AP','SPAP','SP'};
     };
 
 % treatment procedure
@@ -219,21 +246,20 @@ test_procedure = {
     [7]; %[4, 5]; % Test 9
     [8];%[1, 3]; % Test 10
     [2]  % Test 11
+    [8]  % Test 12
     };
 
-% NOTES:
-% Test 8 - exclude 04-06, 17. 10-12 and 16-18 also look a little sus
-% Test 10 - 15, 17, 19-21 look like noise
+
 
 % Which tests participate in each intervention (cell array, 1 row per intervention)
 test_participation = {
     [1:11];          % Diseased
-    [1,3,4,5,8,9,10,11];      % AS
-    [2,4,5,6,7,9,10];      % AP
-    [2,3,6,7,8,9,10,11];      % SP
-    [1,4,5,9,10];          % ASAP
+    [1,3,4,5,8,9,10,11,12];      % AS
+    [2,4,5,6,7,9,10,12];      % AP
+    [2,3,6,7,8,9,10,11,12];      % SP
+    [1,4,5,9,10,12];          % ASAP
     [3,6,7,8,11];             % SPAS
-    [2,6,7,9,10];          % SPAP
+    [2,6,7,9,10,12];          % SPAP
 };
 
 % % Tests with flow difference < 5
@@ -284,8 +310,6 @@ test_participation = {
 
 force_test_participation = {test_participation{2:end}};
 
-
-%% Flow Rate Bar Graph by Intervention Type
 % Hex to RGB conversion function
 hex2rgb = @(hex) sscanf(hex(2:end), '%2x%2x%2x', [1 3]) / 255;
 
@@ -360,136 +384,8 @@ SP_rect_color = COLORS.SP;
 interventions = {'Dis', 'AS', 'AP', 'SP ', 'ASAP', 'SPAS', 'SPAP'};
 intervention_data = {diseased_data, AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
 
-% Preallocate arrays for means and stds
-num_interv = numel(interventions);
-avg_flow = zeros(1, num_interv);
-std_flow = zeros(1, num_interv);
-
-% Compute mean and std for each intervention (per-test means -> std across tests)
-for i = 1:num_interv
-    data = intervention_data{i};
-    if isempty(data)
-        avg_flow(i) = NaN;
-        std_flow(i) = NaN;
-        continue;
-    end
-    tests = unique([data.Test]);                 % unique test IDs present
-    perTestMeans = zeros(1, numel(tests));
-    for k = 1:numel(tests)
-        t = tests(k);
-        mask = [data.Test] == t;
-        perTestMeans(k) = mean([data(mask).FlowRate]);  % average for this test
-    end
-    avg_flow(i) = mean(perTestMeans);            % mean across tests
-    if numel(perTestMeans) > 1
-        std_flow(i) = std(perTestMeans);         % std across tests
-    else
-        std_flow(i) = 0;
-    end
-end
-
-% Plot setup
-figure('Position', [100, 100, 1200, 700]);
-subplot(1,2,1)
-
-x = 1:num_interv;
-b = bar(x, avg_flow, 'FaceColor', 'flat');
-for i = 1:num_interv
-    b.CData(i,:) = bar_colors(i,:);
-end
-hold on;
-
-% Error bars
-errorbar(x, avg_flow, std_flow, 'k', 'LineWidth', 1.5, 'LineStyle', 'none');
-
-% Add significance lines for comparisons to diseased state
-% P-values from R analysis: AS=0.0138(*), AP=0.0187(*), SP=0.1607(ns), ASAP=0.0002(***), SPAS=0.0977(ns), SPAP=0.2717(ns)
-sig_interventions = [2, 3, 5]; % AS, AP, ASAP (indices in interventions array)
-sig_symbols = {'*', '*', '***'}; % Significance symbols
-sig_pvals = [0.0138, 0.0187, 0.0002]; % P-values
-
-% Calculate height for significance lines (above error bars)
-max_bar_height = max(avg_flow + std_flow);
-line_height_base = max_bar_height + 2; % Base height for first significance line
-line_spacing = 4; % Vertical spacing between multiple significance lines
-
-for i = 1:length(sig_interventions)
-    intervention_idx = sig_interventions(i);
-    diseased_idx = 1; % Diseased is always first in the array
-    
-    % Calculate line height (stagger multiple lines)
-    line_height = line_height_base + (i-1) * line_spacing;
-    
-    % Draw horizontal line connecting diseased bar to intervention bar
-    plot([diseased_idx, intervention_idx], [line_height, line_height], 'k-', 'LineWidth', 1);
-    
-    % Draw vertical ticks at each end
-    tick_height = 0.8;
-    plot([diseased_idx, diseased_idx], [line_height - tick_height/2, line_height + tick_height/2], 'k-', 'LineWidth', 1);
-    plot([intervention_idx, intervention_idx], [line_height - tick_height/2, line_height + tick_height/2], 'k-', 'LineWidth', 1);
-    
-    % Add significance symbol at midpoint
-    midpoint_x = (diseased_idx + intervention_idx) / 2;
-    text(midpoint_x, line_height - 2, sig_symbols{i}, 'HorizontalAlignment', 'center', ...
-        'VerticalAlignment', 'bottom', 'FontSize', 12, 'FontWeight', 'bold');
-end
-
-% Marker/legend setup
-marker_types = {'o', 's', 'd', '^', 'v', '>', '<'};
-marker_colors = lines(7);
-h_leg = gobjects(1, 7);
-
-%{ 
-% Plot individual test markers for each intervention
-for i = 1:num_interv
-    tests = test_participation{i};
-    n_tests = numel(tests);
-    for j = 1:n_tests
-        t = tests(j);
-        % Find all data points for this test in this intervention
-        mask = [intervention_data{i}.Test] == t;
-        test_flows = [intervention_data{i}(mask).FlowRate];
-        if isempty(test_flows), continue; end
-        test_mean = mean(test_flows);
-        x_offset = (j - (n_tests+1)/2) * 0.08;
-        scatter(i + x_offset, test_mean, 80, marker_types{t}, ...
-            'MarkerEdgeColor', 'k', 'MarkerFaceColor', marker_colors(t,:), 'LineWidth', 1.2);
-    end
-end
-%}
- 
-% Legend for test markers
-for t = 1:7
-    h_leg(t) = plot(NaN, NaN, marker_types{t}, 'MarkerSize', 8, 'MarkerEdgeColor', 'k', ...
-        'MarkerFaceColor', marker_colors(t,:), 'LineWidth', 1.2);
-end
-%legend(h_leg, arrayfun(@(x) sprintf('Test %d', x), 1:7, 'UniformOutput', false), ...
-%    'Location', 'best', 'NumColumns', 2);
-
-% Axis labels and formatting
-title('', 'FontSize', 14, 'FontWeight', 'bold');
-xlabel('Intervention', 'FontSize', 12);
-ylabel('Flow Rate (ml/s)', 'FontSize', 12);
-set(gca, 'XTick', x, 'XTickLabel', interventions, 'XTickLabelRotation',30);
-
-% Adjust y-axis limits to accommodate significance lines
-current_ylim = ylim;
-new_ylim = [current_ylim(1), max(current_ylim(2), line_height_base + (length(sig_interventions)-1) * line_spacing + 4)];
-ylim(new_ylim);
-ylim([0,70])
-
-set(gcf, 'Color', 'white');
-grid on;
-hold off;
-
-% pubPlot('SpacingOffset',1,'Filename','Flow_vs_Intervention','FileExtension',{'.png','.eps'});
-
 
 %% Pressure Bar Graph by Intervention Type
-
-% Define interventions and their corresponding data
-interventions = {'Dis', 'AS', 'AP', 'SP ', 'ASAP', 'SPAS', 'SPAP'};
-intervention_data = {diseased_data, AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
 
 % Preallocate arrays for means and stds
 num_interv = numel(interventions);
@@ -520,8 +416,8 @@ for i = 1:num_interv
 end
 
 % Plot setup
-% figure('Position', [100, 100, 1200, 700]);
-subplot(1,2,2)
+figure('Position', [100, 100, 1200, 700]);
+subplot(1,2,1)
 
 x = 1:num_interv;
 b = bar(x, avg_pressure, 'FaceColor', 'flat');
@@ -533,40 +429,37 @@ hold on;
 % Error bars
 errorbar(x, avg_pressure, std_pressure, 'k', 'LineWidth', 1.5, 'LineStyle', 'none');
 
-% Marker/legend setup
-marker_types = {'o', 's', 'd', '^', 'v', '>', '<'};
-marker_colors = lines(7);
-h_leg = gobjects(1, 7);
+% Add significance lines for comparisons to diseased state
+sig_interventions = [2]; % AS
+sig_symbols = {'***'}; % Significance symbols
 
-%{
-% Plot individual test markers for each intervention
-for i = 1:num_interv
-    tests = test_participation{i};
-    n_tests = numel(tests);
-    for j = 1:n_tests
-        t = tests(j);
-        % Find all data points for this test in this intervention
-        mask = [intervention_data{i}.Test] == t;
-        test_pressures = [intervention_data{i}(mask).Pressure];
-        if isempty(test_pressures), continue; end
-        test_mean = mean(test_pressures);
-        x_offset = (j - (n_tests+1)/2) * 0.08;
-        scatter(i + x_offset, test_mean, 80, marker_types{t}, ...
-            'MarkerEdgeColor', 'k', 'MarkerFaceColor', marker_colors(t,:), 'LineWidth', 1.2);
-    end
-end
-%}
+% Calculate height for significance lines (above error bars)
+max_bar_height = max(avg_pressure + std_pressure);
+line_height_base = max_bar_height + 2; % Base height for first significance line
+line_spacing = 4; % Vertical spacing between multiple significance lines
 
-% Legend for test markers
-for t = 1:7
-    h_leg(t) = plot(NaN, NaN, marker_types{t}, 'MarkerSize', 8, 'MarkerEdgeColor', 'k', ...
-        'MarkerFaceColor', marker_colors(t,:), 'LineWidth', 1.2);
+for i = 1:length(sig_interventions)
+    intervention_idx = sig_interventions(i);
+    diseased_idx = 1; % Diseased is always first in the array
+    
+    % Calculate line height (stagger multiple lines)
+    line_height = line_height_base + (i-1) * line_spacing;
+    
+    % Draw horizontal line connecting diseased bar to intervention bar
+    plot([diseased_idx, intervention_idx], [line_height, line_height], 'k-', 'LineWidth', 1);
+    
+    % Draw vertical ticks at each end
+    tick_height = 0.8;
+    plot([diseased_idx, diseased_idx], [line_height - tick_height/2, line_height + tick_height/2], 'k-', 'LineWidth', 1);
+    plot([intervention_idx, intervention_idx], [line_height - tick_height/2, line_height + tick_height/2], 'k-', 'LineWidth', 1);
+    
+    % Add significance symbol at midpoint
+    midpoint_x = (diseased_idx + intervention_idx) / 2;
+    text(midpoint_x, line_height - 2, sig_symbols{i}, 'HorizontalAlignment', 'center', ...
+        'VerticalAlignment', 'bottom', 'FontSize', 12, 'FontWeight', 'bold');
 end
-%legend(h_leg, arrayfun(@(x) sprintf('Test %d', x), 1:7, 'UniformOutput', false), ...
-%    'Location', 'best', 'NumColumns', 2);
 
 % Axis labels and formatting
-% title('Average Pressures by Intervention Type with Individual Test Values', 'FontSize', 14, 'FontWeight', 'bold');
 xlabel('Intervention', 'FontSize', 12);
 ylabel('Pressure (mmHg)', 'FontSize', 12);
 set(gca, 'XTick', x, 'XTickLabel', interventions, 'XTickLabelRotation',30);
@@ -575,6 +468,95 @@ grid on;
 hold off;
 
 % pubPlot('Filename','Intervention','FileExtension',{'.png','.eps'});
+% pubPlot('Width','double','Height',300,'Filename','Intervention','FileExtension',{'.png','.eps'});
+
+%% Flow Rate Bar Graph by Intervention Type
+
+% Preallocate arrays for means and stds
+num_interv = numel(interventions);
+avg_flow = zeros(1, num_interv);
+std_flow = zeros(1, num_interv);
+
+% Compute mean and std for each intervention (per-test means -> std across tests)
+for i = 1:num_interv
+    data = intervention_data{i};
+    if isempty(data)
+        avg_flow(i) = NaN;
+        std_flow(i) = NaN;
+        continue;
+    end
+    tests = unique([data.Test]);                 % unique test IDs present
+    perTestMeans = zeros(1, numel(tests));
+    for k = 1:numel(tests)
+        t = tests(k);
+        mask = [data.Test] == t;
+        perTestMeans(k) = mean([data(mask).FlowRate]);  % average for this test
+    end
+    avg_flow(i) = mean(perTestMeans);            % mean across tests
+    if numel(perTestMeans) > 1
+        std_flow(i) = std(perTestMeans);         % std across tests
+    else
+        std_flow(i) = 0;
+    end
+end
+
+% Plot setup
+% figure('Position', [100, 100, 1200, 700]);
+subplot(1,2,2)
+
+x = 1:num_interv;
+b = bar(x, avg_flow, 'FaceColor', 'flat');
+for i = 1:num_interv
+    b.CData(i,:) = bar_colors(i,:);
+end
+hold on;
+
+% Error bars
+errorbar(x, avg_flow, std_flow, 'k', 'LineWidth', 1.5, 'LineStyle', 'none');
+
+% Add significance lines for comparisons to diseased state
+sig_interventions = [];
+sig_symbols = {}; % Significance symbols
+
+% Calculate height for significance lines (above error bars)
+max_bar_height = max(avg_flow + std_flow);
+line_height_base = max_bar_height + 2; % Base height for first significance line
+line_spacing = 4; % Vertical spacing between multiple significance lines
+
+for i = 1:length(sig_interventions)
+    intervention_idx = sig_interventions(i);
+    diseased_idx = 1; % Diseased is always first in the array
+    
+    % Calculate line height (stagger multiple lines)
+    line_height = line_height_base + (i-1) * line_spacing;
+    
+    % Draw horizontal line connecting diseased bar to intervention bar
+    plot([diseased_idx, intervention_idx], [line_height, line_height], 'k-', 'LineWidth', 1);
+    
+    % Draw vertical ticks at each end
+    tick_height = 0.8;
+    plot([diseased_idx, diseased_idx], [line_height - tick_height/2, line_height + tick_height/2], 'k-', 'LineWidth', 1);
+    plot([intervention_idx, intervention_idx], [line_height - tick_height/2, line_height + tick_height/2], 'k-', 'LineWidth', 1);
+    
+    % Add significance symbol at midpoint
+    midpoint_x = (diseased_idx + intervention_idx) / 2;
+    text(midpoint_x, line_height - 2, sig_symbols{i}, 'HorizontalAlignment', 'center', ...
+        'VerticalAlignment', 'bottom', 'FontSize', 12, 'FontWeight', 'bold');
+end
+
+% Axis labels and formatting
+xlabel('Intervention', 'FontSize', 12);
+ylabel('Flow Rate (ml/s)', 'FontSize', 12);
+set(gca, 'XTick', x, 'XTickLabel', interventions, 'XTickLabelRotation',30);
+
+% Adjust y-axis limits to accommodate significance lines
+ylim([0,60])
+
+set(gcf, 'Color', 'white');
+grid on;
+hold off;
+
+% pubPlot('SpacingOffset',1,'Filename','Flow_vs_Intervention','FileExtension',{'.png','.eps'});
 pubPlot('Width','double','Height',300,'Filename','Intervention','FileExtension',{'.png','.eps'});
 
 %% Force Difference Bar Graphs by Intervention Type (6 Subplots)
@@ -582,6 +564,15 @@ pubPlot('Width','double','Height',300,'Filename','Intervention','FileExtension',
 % List of intervention types to plot (excluding 'Diseased')
 interventions = {'AS', 'AP', 'SP', 'ASAP', 'SPAS', 'SPAP'};
 force_data = {AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
+
+sig_interventions = {...
+    '','***','***','','','','','***';... % AS
+    '','*','','','','','','**';... % AP
+    '','','','','***','*','','***';... % SP
+    '','***','***','','','*','','';... % ASAP
+    '','***','***','','***','***','','***';... % SPAS
+    '***','***','','','***','**','','***';... % SPAP
+    };
 
 %{
 Old force_colors definition - now using centralized colors from top of script
@@ -604,9 +595,6 @@ Old commented force_colors = [
     0.29 0.45 0.72;     % SPAP - #4A73B8 teal blue
 ];
 %}
-number_of_pins = 8;
-marker_types = {'o', 's', 'd', '^', 'v', '>', '<'};
-marker_colors = lines(7);
 
 figure('Position', [100, 100, 1400, 700]);
 
@@ -665,25 +653,17 @@ for interv_idx = 1:length(interventions)
     hold on;
 
     % Error bars (skip NaNs)
-    err = std_force_diff./sqrt(numel(tests_present));
+    % err = std_force_diff; % standard deviations
+    err = std_force_diff./sqrt(numel(tests_present)); % standard errors
     err(isnan(err)) = 0;
     errorbar(x, avg_force_diff, err, 'k', 'LineWidth', 1.2, 'LineStyle', 'none');
 
-    %{
-    % Plot individual test markers using the perTestDiffs matrix
-    for k = 1:numel(tests_present)
-        test_num = tests_present(k);
-        test_idx = find(participating_tests == test_num, 1);
-        if isempty(test_idx), continue; end
-        x_offset = (test_idx - (length(participating_tests)+1)/2) * 0.08;
-        for pin = 1:number_of_pins
-            val = perTestDiffs(k, pin);
-            if isnan(val), continue; end
-            scatter(pin + x_offset, val, 60, marker_types{test_num}, ...
-                'MarkerEdgeColor', 'k', 'MarkerFaceColor', marker_colors(test_num,:), 'LineWidth', 1.1);
+    % Plot significance markers
+    for pin = 1 : number_of_pins
+        if ~isempty(sig_interventions{interv_idx,pin})
+            text(pin,avg_force_diff(pin)+sign(avg_force_diff(pin))*(err(pin)+0.02),sig_interventions{interv_idx,pin},'HorizontalAlignment','center')
         end
     end
-    %}
     
     % Formatting
     title([interventions{interv_idx},', n=',num2str(length(tests_present))], 'FontWeight', 'bold', 'FontSize', 12);
@@ -1087,8 +1067,8 @@ pubPlot('Width','double','Height',400,'Filename','ForceDiff_Contour','FileExtens
 %% Export Force Differences Relative to Diseased Data
 
 % Initialize empty structure array for collecting force difference rows
-diff_rows = struct('Test', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, ...
-    'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {});
+diff_rows = struct('Heart', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, ...
+    'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {}, 'ReplicateTestNum', {});
 
 % Get diseased data reference for each test
 diseased_reference = containers.Map('KeyType', 'int32', 'ValueType', 'any');
@@ -1181,21 +1161,48 @@ for i = 1:numel(intervention_names)
             
             % Calculate force difference (intervention - diseased)
             force_diff = interv_force_mean - diseased_force_mean;
+
+            % switch "Diseased" to "Control"
+            if strcmp(intervention_names{i},'Diseased')
+                treatment_name = 'Control';
+            else
+                treatment_name = intervention_names{i};
+            end
             
-            diff_rows(end+1) = struct( ...
-                'Test', tt, ...
-                'Intervention', intervention_names{i}, ...
-                'NumClips', numClips,...
-                'Pressure', interv_pressure_mean, ...
-                'FlowRate', interv_flow_mean, ...
-                'Pin', pin, ...
-                'Force', interv_force_mean, ...
-                'ForceDifference', force_diff, ...
-                'PressureDifference', pressure_diff, ...
-                'FlowDifference', flow_diff, ...
-                'ClipOrder', ClipOrder, ...
-                'Treatment', Treatment ...
-            );
+            % % average technical replicates
+            % diff_rows(end+1) = struct( ...
+            %     'Heart', tt, ...
+            %     'Intervention', treatment_name, ...
+            %     'NumClips', numClips,...
+            %     'Pressure', interv_pressure_mean, ...
+            %     'FlowRate', interv_flow_mean, ...
+            %     'Pin', pin, ...
+            %     'Force', interv_force_mean, ...
+            %     'ForceDifference', force_diff, ...
+            %     'PressureDifference', pressure_diff, ...
+            %     'FlowDifference', flow_diff, ...
+            %     'ClipOrder', ClipOrder, ...
+            %     'Treatment', Treatment ...
+            % );
+
+            % do not average techincal replicates
+            for replicate = 1 : length(interv_data)
+                diff_rows(end+1) = struct( ...
+                    'Heart', tt, ...
+                    'Intervention', treatment_name, ...
+                    'NumClips', numClips,...
+                    'Pressure', interv_data(replicate).Pressure, ...
+                    'FlowRate', interv_data(replicate).FlowRate, ...
+                    'Pin', pin, ...
+                    'Force', interv_data(replicate).(force_col), ...
+                    'ForceDifference', interv_data(replicate).(force_col) - diseased_force_mean, ...
+                    'PressureDifference', interv_data(replicate).Pressure - diseased_pressure_mean, ...
+                    'FlowDifference', interv_data(replicate).FlowRate - diseased_flow_mean, ...
+                    'ClipOrder', ClipOrder, ...
+                    'Treatment', Treatment, ...
+                    'ReplicateTestNum', replicate ...
+                );
+            end
         end
     end
 end
@@ -1219,9 +1226,19 @@ end
 
 
 %% Plot and save all 10 
-testDataCurrent = test11data;
-dataNum = 11;
+testDataCurrent = test12data;
+dataNum = 12;
 run_dex = [10:21];
+
+% startdex = [];
+% for i = 10:length(testDataCurrent)
+% startdex(i) = find(test12data{i}.Pressure(:) > 1.2*mean(test12data{i}.Pressure(1:10)),1)
+% end
+% enddex = [];
+% for i = 10:length(testDataCurrent)
+% temp = find(test12data{i}.Pressure(:) > 1.2*mean(test12data{i}.Pressure(end-10:end)));
+% enddex(i) = temp(end);
+% end
 
 if dataNum == 2
     % Test 2 - SP,  AP,     SPAP
@@ -1336,6 +1353,24 @@ elseif dataNum == 11
         324, 332, 304];
     start_time_dex = start_time_dex - 20;
     data_Colors = [COLORS.Diseased; COLORS.SP; COLORS.SPAS; COLORS.AS];
+elseif dataNum == 12
+    % Test 12 - AS,  ASAP,   AP,    SPAP,   SP 
+    run_dex = [10:27];
+    start_time_dex = [38, 36, 47,...
+        33, 46, 54,...
+    	41, 41, 58,...
+        44,	37,	186,...
+        45,	40,	54,...
+    	43,	41,	78];
+    end_time_dex = [300, 311, 281,...
+    	354, 317, 288,...
+        316, 319, 291,...
+    	315, 328, 448,...
+    	354, 323, 296,...
+        357, 351, 384];
+    start_time_dex = start_time_dex - 20;
+    end_time_dex = end_time_dex + 10;
+    data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.ASAP; COLORS.AP; COLORS.SPAP; COLORS.SP];
 end
 
 % resample data
@@ -1400,7 +1435,7 @@ for j = 1 : numel(run_dex)/3
             if dataNum == 3
                 ylim([0,60])
                 yticks(0:10:60)
-            elseif dataNum == 8
+            elseif dataNum == 8 || 12
                 ylim([0,70])
                 yticks(0:10:70)
             else
@@ -1429,12 +1464,18 @@ for j = 1 : numel(run_dex)/3
                 end
                 ylim([-1,0.5])
                 yticks(-1:0.25:0.5)
-             elseif dataNum == 11
+            elseif dataNum == 11
                 if k-1 == 5
                     legend('','Diseased','','SP','','SPAS','','AS','')
                 end
                 ylim([-.75,0.25])
                 yticks(-0.75:0.25:0.25)
+            elseif dataNum == 12
+                if k-1 == 5
+                    legend('','Diseased','','AS','','ASAP','','AP','','SPAP','','SP')
+                end
+                ylim([-1,0.5])
+                yticks(-1:0.25:0.5)
             else
                 ylim([-0.5,0.2])
                 yticks(-0.5:0.1:0.2)
