@@ -27,6 +27,7 @@ load(fullfile(testIdxDir, 'test9idx.mat'));
 load(fullfile(testIdxDir, 'test10idx.mat'));
 load(fullfile(testIdxDir, 'test11idx.mat'));
 load(fullfile(testIdxDir, 'test12idx.mat'));
+load(fullfile(testIdxDir, 'test13idx.mat'));
 
 % -------------------------- Load and preprocess data
 
@@ -43,7 +44,8 @@ folderPaths = {
     fullfile(dataDir, '01_21_26'),
     fullfile(dataDir, '01_23_26'),
     fullfile(dataDir, '01_30_26'),
-    fullfile(dataDir, '02_04_26')
+    fullfile(dataDir, '02_04_26'),
+    fullfile(dataDir, '02_06_26')
 };
 
 % Initialize cell arrays to store data
@@ -197,17 +199,16 @@ disp('Average data calculation complete')
 % Test 10 - AS,  ASAP,   AP,    SPAP,   SP
 % Test 11 - SP,  SPAS,   AS
 % Test 12 - AS,  ASAP,   AP,    SPAP,   SP
-% Test 13 - 
+% Test 13 - AS,  SPAS,   SP,    SPAP,   AP
 
-healthy_data = [test1avg(1:9), test2avg(1:9), test3avg(1:9), test4avg(1:9), test5avg(1:9), test6avg(5:9), test7avg(1:9), test8avg([1:3,7:9]), test9avg(1:9), test10avg([1:3,7:9]), test11avg(1:9), test12avg(1:9)];
-diseased_data = [test1avg(10:12), test2avg(10:12), test3avg(10:12), test4avg(10:12), test5avg(10:12), test6avg(10:12), test7avg(10:12), test8avg(10:12), test9avg(10:12), test10avg(10:12), test11avg(10:12), test12avg(10:12)];
-AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:14), test9avg(25:27), test10avg(13:14), test11avg(19:21), test12avg(13:15)];
-AP_data= [test2avg(16:18), test4avg(16:18), test5avg(16:18), test6avg(22:24), test7avg(22:24), test9avg(19:21), test10avg(19:21), test12avg(19:21)];
-SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27), test11avg(13:15), test12avg(25:27)];
+healthy_data = [test1avg(1:9), test2avg(1:9), test3avg(1:9), test4avg(1:9), test5avg(1:9), test6avg(5:9), test7avg(1:9), test8avg([1:3,7:9]), test9avg(1:9), test10avg([1:3,7:9]), test11avg(1:9), test12avg(1:9), test13avg(1:9)];
+diseased_data = [test1avg(10:12), test2avg(10:12), test3avg(10:12), test4avg(10:12), test5avg(10:12), test6avg(10:12), test7avg(10:12), test8avg(10:12), test9avg(10:12), test10avg(10:12), test11avg(10:12), test12avg(10:12), test13avg(10:12)];
+AS_data= [test1avg(13:15), test3avg(13:15), test4avg(13:15), test5avg(13:14), test9avg(25:27), test10avg(13:14), test11avg(19:21), test12avg(13:15), test13avg(13:15)];
+AP_data= [test2avg(16:18), test4avg(16:18), test5avg(16:18), test6avg(22:24), test7avg(22:24), test9avg(19:21), test10avg(19:21), test12avg(19:21), test13avg(25:27)];
+SP_data= [test2avg(13:15), test3avg(16:18), test6avg(13:15), test7avg(13:15), test8avg(13:15), test9avg(13:15), test10avg(25:27), test11avg(13:15), test12avg(25:27), test13avg(19:21)];
 ASAP_data= [test1avg(19:21), test4avg(19:21), test5avg(19:21), test9avg(22:24), test10avg([16,18]), test12avg(16:18)];
-SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18]), test11avg(16:18)];
-SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), test10avg(22:24), test12avg(22:24)];
-
+SPAS_data= [test3avg(19:21), test6avg(19:21), test7avg(19:21), test8avg([16,18]), test11avg(16:18), test13avg(16:18)];
+SPAP_data= [test2avg(19:21), test6avg(16:18), test7avg(16:18), test9avg(16:18), test10avg(22:24), test12avg(22:24), test13avg(22:24)];
 
 
 test_order = {
@@ -223,6 +224,7 @@ test_order = {
     {'AS','ASAP','AP','SPAP','SP'};
     {'SP','SPAS','AS'};
     {'AS','ASAP','AP','SPAP','SP'};
+    {'AS','SPAS','SP','SPAP','AP'};
     };
 
 % treatment procedure
@@ -234,6 +236,7 @@ test_order = {
 % 6: SP -> SPAS -> SPAP -> AP
 % 7: SP -> SPAP -> AP -> ASAP -> AS
 % 8: AS -> ASAP -> AP -> SPAP -> SP
+% 9: AS -> SPAS -> SP -> SPAP -> AP
 test_procedure = {
     [1]; % Test 1
     [3]; % Test 2
@@ -247,19 +250,20 @@ test_procedure = {
     [8];%[1, 3]; % Test 10
     [2]  % Test 11
     [8]  % Test 12
+    [9]  % Test 13
     };
 
 
 
 % Which tests participate in each intervention (cell array, 1 row per intervention)
 test_participation = {
-    [1:11];          % Diseased
-    [1,3,4,5,8,9,10,11,12];      % AS
-    [2,4,5,6,7,9,10,12];      % AP
-    [2,3,6,7,8,9,10,11,12];      % SP
-    [1,4,5,9,10,12];          % ASAP
-    [3,6,7,8,11];             % SPAS
-    [2,6,7,9,10,12];          % SPAP
+    [1:13];          % Diseased
+    [1,3,4,5,9,10,11,12,13];   % AS
+    [2,4,5,6,7,9,10,12,13];      % AP
+    [2,3,6,7,8,9,10,11,12,13];   % SP
+    [1,4,5,9,10,12];             % ASAP
+    [3,6,7,8,11,13];             % SPAS
+    [2,6,7,9,10,12,13];          % SPAP
 };
 
 % % Tests with flow difference < 5
@@ -455,7 +459,7 @@ for i = 1:length(sig_interventions)
     
     % Add significance symbol at midpoint
     midpoint_x = (diseased_idx + intervention_idx) / 2;
-    text(midpoint_x, line_height - 2, sig_symbols{i}, 'HorizontalAlignment', 'center', ...
+    text(midpoint_x, line_height - 3, sig_symbols{i}, 'HorizontalAlignment', 'center', ...
         'VerticalAlignment', 'bottom', 'FontSize', 12, 'FontWeight', 'bold');
 end
 
@@ -566,12 +570,12 @@ interventions = {'AS', 'AP', 'SP', 'ASAP', 'SPAS', 'SPAP'};
 force_data = {AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
 
 sig_interventions = {...
-    '','***','***','','','','','***';... % AS
-    '','*','','','','','','**';... % AP
-    '','','','','***','*','','***';... % SP
+    '','***','***','','','*','','***';... % AS
+    '*','','','','','','','***';... % AP
+    '***','','','','***','*','','***';... % SP
     '','***','***','','','*','','';... % ASAP
     '','***','***','','***','***','','***';... % SPAS
-    '***','***','','','***','**','','***';... % SPAP
+    '***','**','','','***','***','','***';... % SPAP
     };
 
 %{
@@ -1226,8 +1230,8 @@ end
 
 
 %% Plot and save all 10 
-testDataCurrent = test12data;
-dataNum = 12;
+testDataCurrent = test13data;
+dataNum = 13;
 run_dex = [10:21];
 
 % startdex = [];
@@ -1371,6 +1375,28 @@ elseif dataNum == 12
     start_time_dex = start_time_dex - 20;
     end_time_dex = end_time_dex + 10;
     data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.ASAP; COLORS.AP; COLORS.SPAP; COLORS.SP];
+elseif dataNum == 13
+    % Test 13 - AS,  SPAS,   SP,    SPAP,   AP 
+    run_dex = [10:27];
+    start_time_dex = [41, 48, 42,...
+        40, 37, 72,...
+        39, 36, 69,...
+    	35, 49, 68,...
+        51, 39, 68,...
+        43, 39, 62];
+    end_time_dex = [606, 433, 538,...
+        365, 373, 379,...
+        435, 417, 397,...
+        315, 342, 361,...
+        458, 381, 333,...
+        357, 335, 335];
+    start_time_dex = start_time_dex - 20;
+    end_time_dex = end_time_dex + 10;
+    % for i = 1 : length(run_dex)
+    %     start_time_dex(i) = test13idx(9+i).segmentStartIdx;
+    %     end_time_dex(i) = test13idx(9+i).segmentEndIdx;
+    % end
+    data_Colors = [COLORS.Diseased; COLORS.AS; COLORS.SPAS; COLORS.SP; COLORS.SPAP; COLORS.AP];
 end
 
 % resample data
@@ -1473,6 +1499,12 @@ for j = 1 : numel(run_dex)/3
             elseif dataNum == 12
                 if k-1 == 5
                     legend('','Diseased','','AS','','ASAP','','AP','','SPAP','','SP')
+                end
+                ylim([-1,0.5])
+                yticks(-1:0.25:0.5)
+            elseif dataNum == 13
+                if k-1 == 5
+                    legend('','Diseased','','AS','','SPAS','','SP','','SPAP','','AP')
                 end
                 ylim([-1,0.5])
                 yticks(-1:0.25:0.5)
