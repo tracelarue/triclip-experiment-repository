@@ -39,7 +39,6 @@ filePattern = fullfile(folderPath, '*.csv');
 % Get information about all matching CSV files
 csvFiles = dir(filePattern);
 
-
 % Initialize cell arrays to store data and filenames
 allData = cell(length(csvFiles), 1);
 names = cell(length(csvFiles), 1);
@@ -60,13 +59,11 @@ end
 names_list = names.';
 clear data
 
-
 % Clean up time format - remove double periods
 for i = 1:length(allData)
     disp(names_list(i))
     allData{i}.Time = strrep(allData{i}.Time, '..', '.');
 end
-
 
 % Calibration slopes for each pin
 fcal = [
