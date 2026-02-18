@@ -13,6 +13,7 @@ projectRoot = fileparts(scriptDir);
 % Build data paths
 dataDir = fullfile(projectRoot, 'data');
 testIdxDir = fullfile(dataDir, 'testidx');
+annotationsDir = fullfile(dataDir, 'videoAnnotations');
 
 % -------------------------- Load stable region index data for each test
 load(fullfile(testIdxDir, 'test1idx.mat'));
@@ -28,6 +29,28 @@ load(fullfile(testIdxDir, 'test10idx.mat'));
 load(fullfile(testIdxDir, 'test11idx.mat'));
 load(fullfile(testIdxDir, 'test12idx.mat'));
 load(fullfile(testIdxDir, 'test13idx.mat'));
+
+% -------------------------- Load video annotation data for each test
+load(fullfile(annotationsDir, 'test1Annotations.mat'));
+load(fullfile(annotationsDir, 'test2Annotations.mat'));
+load(fullfile(annotationsDir, 'test3Annotations.mat'));
+load(fullfile(annotationsDir, 'test4Annotations.mat'));
+load(fullfile(annotationsDir, 'test5Annotations.mat'));
+load(fullfile(annotationsDir, 'test6Annotations.mat'));
+load(fullfile(annotationsDir, 'test7Annotations.mat'));
+load(fullfile(annotationsDir, 'test8Annotations.mat'));
+load(fullfile(annotationsDir, 'test9Annotations.mat'));
+load(fullfile(annotationsDir, 'test10Annotations.mat'));
+load(fullfile(annotationsDir, 'test11Annotations.mat'));
+load(fullfile(annotationsDir, 'test12Annotations.mat'));
+load(fullfile(annotationsDir, 'test13Annotations.mat'));
+annotationValveNames = ['2025_05_21';'2025_06_13';'2025_07_09';...
+    '2025_07_16';'2025_07_23';'2025_08_05';'2025_08_07';...
+    '2026_01_14';'2026_01_21';'2026_01_23';'2026_01_30';...
+    '2026_02_04';'2026_02_06'];
+
+% -------------------------- Load morphology data for each test
+load(fullfile(dataDir,'TriClipMorphology.mat'));
 
 % -------------------------- Load and preprocess data
 
@@ -96,6 +119,17 @@ force_calibration = [
     -1427.9047*3.3  % pin8
 ];
 
+force_calibration_updated = [
+    -1581.340707*3.3  % pin1
+    -1356.716945*3.3  % pin2
+    -1436.661363*3.3  % pin3
+    -943.844378*3.3  % pin4
+    -939.596181*3.3  % pin5
+    -803.385345*3.3  % pin6
+    -2958.500987*3.3  % pin7
+    -1410.673529*3.3  % pin8
+];
+
 % Process each test dataset
 for test = 1:number_of_tests
     for subtest = 1:length(all_test_data{test})
@@ -106,7 +140,11 @@ for test = 1:number_of_tests
         for pin = 1:8
             force_x = ['Force' num2str(pin)];
             % Apply calibration
-            all_test_data{test}{subtest}.(force_x) = all_test_data{test}{subtest}.(force_x) * force_calibration(pin);
+            if test < 8
+                all_test_data{test}{subtest}.(force_x) = all_test_data{test}{subtest}.(force_x) * force_calibration(pin);
+            else
+                all_test_data{test}{subtest}.(force_x) = all_test_data{test}{subtest}.(force_x) * force_calibration_updated(pin);
+            end
             % Zero the force by subtracting the initial value
             initial_force = all_test_data{test}{subtest}.(force_x)(1);
             all_test_data{test}{subtest}.(force_x) = all_test_data{test}{subtest}.(force_x) - initial_force;
@@ -388,7 +426,6 @@ SP_rect_color = COLORS.SP;
 interventions = {'Dis', 'AS', 'AP', 'SP ', 'ASAP', 'SPAS', 'SPAP'};
 intervention_data = {diseased_data, AS_data, AP_data, SP_data, ASAP_data, SPAS_data, SPAP_data};
 
-
 %% Pressure Bar Graph by Intervention Type
 
 % Preallocate arrays for means and stds
@@ -414,6 +451,7 @@ for i = 1:num_interv
     avg_pressure(i) = mean(perTestMeans);
     if numel(perTestMeans) > 1
         std_pressure(i) = std(perTestMeans);
+        std_pressure(i) = std(perTestMeans)./numel(tests); % standard error across tests
     else
         std_pressure(i) = 0;
     end
@@ -499,6 +537,7 @@ for i = 1:num_interv
     avg_flow(i) = mean(perTestMeans);            % mean across tests
     if numel(perTestMeans) > 1
         std_flow(i) = std(perTestMeans);         % std across tests
+        std_flow(i) = std(perTestMeans)./numel(tests); % standard error across tests
     else
         std_flow(i) = 0;
     end
@@ -1072,7 +1111,22 @@ pubPlot('Width','double','Height',400,'Filename','ForceDiff_Contour','FileExtens
 
 % Initialize empty structure array for collecting force difference rows
 diff_rows = struct('Heart', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, ...
-    'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {}, 'ReplicateTestNum', {});
+    'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {}, ...
+    'AnnularArea', {}, 'AnnularPerimeter', {}, 'SLDiameter', {}, 'APDiameter', {}, 'CoaptationGapArea', {});
+diff_rows_full = struct('Heart', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, ...
+    'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {}, 'ReplicateTestNum', {}, ...
+    'AnnularArea', {}, 'AnnularPerimeter', {}, 'SLDiameter', {}, 'APDiameter', {}, 'CoaptationGapArea', {});
+intervention_diff_rows = struct('Heart', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, ...
+    'AcrossAxisForceDiff', {},'SLForce', {}, 'APForce', {}, 'ClipDistanceMax', {}, 'ClipDistanceMin', {}, 'ClipOrder', {}, 'Treatment', {}, ...
+    'AnnularArea', {}, 'AnnularPerimeter', {}, 'SLDiameter', {}, 'APDiameter', {}, 'CoaptationGapArea', {});
+morph_full_diff_rows = struct('Heart', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, ...
+    'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {}, ...
+    'AnnularArea', {}, 'AnnularPerimeter', {}, 'SLDiameter', {}, 'APDiameter', {}, 'CoaptationGapArea', {}, ...
+    'TotalLeafletArea', {}, 'TotalLeafletPerimeter', {});
+morph_leaflet_diff_rows = struct('Heart', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, ...
+    'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {}, ...
+    'AnnularArea', {}, 'AnnularPerimeter', {}, 'SLDiameter', {}, 'APDiameter', {}, 'CoaptationGapArea', {}, ...
+    'Leaflet', {}, 'LeafletArea', {}, 'LeafletPerimeter', {}, 'LeafletHeight', {}, 'LeafletWidth', {});
 
 % Get diseased data reference for each test
 diseased_reference = containers.Map('KeyType', 'int32', 'ValueType', 'any');
@@ -1135,6 +1189,112 @@ for i = 1:numel(intervention_names)
             end
             Treatment = test_procedure{tt};
         end
+
+        % annotation data
+        annotationData = eval(['test' num2str(tt) 'Annotations']);
+        annotationTestDex = 0;
+
+        if strcmp(intervention_names{i},'Diseased')
+            for j = 1 : numel(annotationData)
+                if contains(annotationData(j).Test,'10-') || contains(annotationData(j).Test,'11-') || contains(annotationData(j).Test,'12-')
+                    annotationTestDex = j;
+                end
+            end
+        elseif strcmp(intervention_names{i},'ASAP')
+            for j = 1 : numel(annotationData)
+                if contains(annotationData(j).Test,'ASAP')
+                    annotationTestDex = j;
+                end
+            end
+        elseif strcmp(intervention_names{i},'SPAS')
+            for j = 1 : numel(annotationData)
+                if contains(annotationData(j).Test,'SPAS')
+                    annotationTestDex = j;
+                end
+            end
+        elseif strcmp(intervention_names{i},'SPAP')
+            for j = 1 : numel(annotationData)
+                if contains(annotationData(j).Test,'SPAP')
+                    annotationTestDex = j;
+                end
+            end
+        elseif strcmp(intervention_names{i},'AP')
+            for j = 1 : numel(annotationData)
+                if contains(annotationData(j).Test,' AP ')
+                    annotationTestDex = j;
+                end
+            end
+        elseif strcmp(intervention_names{i},'AS')
+            for j = 1 : numel(annotationData)
+                if contains(annotationData(j).Test,' AS ')
+                    annotationTestDex = j;
+                end
+            end
+        elseif strcmp(intervention_names{i},'SP')
+            for j = 1 : numel(annotationData)
+                if contains(annotationData(j).Test,' SP ')
+                    annotationTestDex = j;
+                end
+            end
+        end
+
+        AnnularArea = annotationData(annotationTestDex).Area;
+        AnnularPerimeter = annotationData(annotationTestDex).Perimeter;
+        SL_Diameter = annotationData(annotationTestDex).SL_Diameter;
+        AP_Diameter = annotationData(annotationTestDex).AP_Diameter;
+        Coaptation_Gap_Area = annotationData(annotationTestDex).Gap_Area;
+
+        % find nearest pin to clip line
+        closest_pins = [];
+        closest_pins_clip_2 = [];
+        if ~isempty(annotationData(annotationTestDex).ClipAxis_Idx)
+            closest_pins_1 = knnsearch(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),...
+                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis_Idx(1),:),'K',2);
+            closest_pins_2 = knnsearch(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),...
+                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis_Idx(2),:),'K',2);
+            closest_pins = [closest_pins_1, closest_pins_2];
+            closest_pins = unique(closest_pins);
+        end
+        if ~isempty(annotationData(annotationTestDex).ClipAxis2_Idx)
+            closest_pins_3 = knnsearch(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),...
+                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis2_Idx(1),:),'K',2);
+            closest_pins_4 = knnsearch(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),...
+                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis2_Idx(2),:),'K',2);
+            closest_pins_clip_2 = [closest_pins_3, closest_pins_4];
+            closest_pins_clip_2 = unique(closest_pins_clip_2);
+        end
+        
+        % assume pins measure radial forces towards centroid
+        pin_vecs = -annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:)./...
+            vecnorm(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),2,2);
+
+        % find distances from clip to annulus
+        clip_distance_max = 0;
+        clip_distance_min = 0;
+        clip_2_distance_max = 0;
+        clip_2_distance_min = 0;
+        if ~isempty(annotationData(annotationTestDex).ClipAxis_Idx)
+            clip_distances = vecnorm([annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis_Idx(1),:) - annotationData(annotationTestDex).ClipCenter; ...
+                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis_Idx(2),:) - annotationData(annotationTestDex).ClipCenter],2,2);
+            clip_distances = annotationData(annotationTestDex).mmPerPixel.*clip_distances;
+            clip_distance_max = max(clip_distances);
+            clip_distance_min = min(clip_distances);
+        end
+        if ~isempty(annotationData(annotationTestDex).ClipAxis2_Idx)
+            clip2_distances = vecnorm([annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis2_Idx(1),:) - annotationData(annotationTestDex).ClipCenter2; ...
+                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis2_Idx(2),:) - annotationData(annotationTestDex).ClipCenter2],2,2);
+            clip2_distances = annotationData(annotationTestDex).mmPerPixel.*clip2_distances;
+            clip_2_distance_max = max(clip2_distances);
+            clip_2_distance_min = min(clip2_distances);
+        end
+
+
+        % morphology data
+        if tt >= 8
+            MorphFullDex = tt - 7;
+            MorphLeafletDex = [3*(tt-8)+1:3*(tt-8)+3];
+        end
+
         
         % Get diseased reference data for this test
         diseased_ref = diseased_reference(tt);
@@ -1156,15 +1316,18 @@ for i = 1:numel(intervention_names)
         flow_diff = interv_flow_mean - diseased_flow_mean;
         
         % Calculate force differences for each pin
+        interv_force_mean = zeros(1,8);
+        diseased_force_mean = zeros(1,8);
+        force_diff = zeros(1,8);
         for pin = 1:8
             force_col = ['Force' num2str(pin)];
             
             % Calculate mean forces
-            interv_force_mean = mean([interv_data.(force_col)]);
-            diseased_force_mean = mean([diseased_ref.(force_col)]);
+            interv_force_mean(pin) = mean([interv_data.(force_col)]);
+            diseased_force_mean(pin) = mean([diseased_ref.(force_col)]);
             
             % Calculate force difference (intervention - diseased)
-            force_diff = interv_force_mean - diseased_force_mean;
+            force_diff(pin) = interv_force_mean(pin) - diseased_force_mean(pin);
 
             % switch "Diseased" to "Control"
             if strcmp(intervention_names{i},'Diseased')
@@ -1172,26 +1335,10 @@ for i = 1:numel(intervention_names)
             else
                 treatment_name = intervention_names{i};
             end
-            
-            % % average technical replicates
-            % diff_rows(end+1) = struct( ...
-            %     'Heart', tt, ...
-            %     'Intervention', treatment_name, ...
-            %     'NumClips', numClips,...
-            %     'Pressure', interv_pressure_mean, ...
-            %     'FlowRate', interv_flow_mean, ...
-            %     'Pin', pin, ...
-            %     'Force', interv_force_mean, ...
-            %     'ForceDifference', force_diff, ...
-            %     'PressureDifference', pressure_diff, ...
-            %     'FlowDifference', flow_diff, ...
-            %     'ClipOrder', ClipOrder, ...
-            %     'Treatment', Treatment ...
-            % );
 
             % do not average techincal replicates
             for replicate = 1 : length(interv_data)
-                diff_rows(end+1) = struct( ...
+                diff_rows_full(end+1) = struct( ...
                     'Heart', tt, ...
                     'Intervention', treatment_name, ...
                     'NumClips', numClips,...
@@ -1204,14 +1351,184 @@ for i = 1:numel(intervention_names)
                     'FlowDifference', interv_data(replicate).FlowRate - diseased_flow_mean, ...
                     'ClipOrder', ClipOrder, ...
                     'Treatment', Treatment, ...
-                    'ReplicateTestNum', replicate ...
+                    'ReplicateTestNum', replicate, ...
+                    'AnnularArea', AnnularArea, ...
+                    'AnnularPerimeter', AnnularPerimeter, ...
+                    'SLDiameter', SL_Diameter, ...
+                    'APDiameter', AP_Diameter, ...
+                    'CoaptationGapArea', Coaptation_Gap_Area ...
                 );
             end
+            
+            % average technical replicates
+            diff_rows(end+1) = struct( ...
+                'Heart', tt, ...
+                'Intervention', treatment_name, ...
+                'NumClips', numClips,...
+                'Pressure', interv_pressure_mean, ...
+                'FlowRate', interv_flow_mean, ...
+                'Pin', pin, ...
+                'Force', interv_force_mean(pin), ...
+                'ForceDifference', force_diff(pin), ...
+                'PressureDifference', pressure_diff, ...
+                'FlowDifference', flow_diff, ...
+                'ClipOrder', ClipOrder, ...
+                'Treatment', Treatment, ...
+                'AnnularArea', AnnularArea, ...
+                'AnnularPerimeter', AnnularPerimeter, ...
+                'SLDiameter', SL_Diameter, ...
+                'APDiameter', AP_Diameter, ...
+                'CoaptationGapArea', Coaptation_Gap_Area ...
+            );
+
+            % morphological data if present
+            if tt > 8
+                morph_full_diff_rows(end+1) = struct( ...
+                    'Heart', tt, ...
+                    'Intervention', treatment_name, ...
+                    'NumClips', numClips,...
+                    'Pressure', interv_pressure_mean, ...
+                    'FlowRate', interv_flow_mean, ...
+                    'Pin', pin, ...
+                    'Force', interv_force_mean(pin), ...
+                    'ForceDifference', force_diff(pin), ...
+                    'PressureDifference', pressure_diff, ...
+                    'FlowDifference', flow_diff, ...
+                    'ClipOrder', ClipOrder, ...
+                    'Treatment', Treatment, ...
+                    'AnnularArea', AnnularArea, ...
+                    'AnnularPerimeter', AnnularPerimeter, ...
+                    'SLDiameter', SL_Diameter, ...
+                    'APDiameter', AP_Diameter, ...
+                    'CoaptationGapArea', Coaptation_Gap_Area, ...
+                    'TotalLeafletArea', MorphologyFull(MorphFullDex).LeafletArea, ...
+                    'TotalLeafletPerimeter', MorphologyFull(MorphFullDex).LeafletPerimeter ...
+                );
+
+                for l = 1 : 3
+                    morph_leaflet_diff_rows(end+1) = struct( ...
+                        'Heart', tt, ...
+                        'Intervention', treatment_name, ...
+                        'NumClips', numClips,...
+                        'Pressure', interv_pressure_mean, ...
+                        'FlowRate', interv_flow_mean, ...
+                        'Pin', pin, ...
+                        'Force', interv_force_mean(pin), ...
+                        'ForceDifference', force_diff(pin), ...
+                        'PressureDifference', pressure_diff, ...
+                        'FlowDifference', flow_diff, ...
+                        'ClipOrder', ClipOrder, ...
+                        'Treatment', Treatment, ...
+                        'AnnularArea', AnnularArea, ...
+                        'AnnularPerimeter', AnnularPerimeter, ...
+                        'SLDiameter', SL_Diameter, ...
+                        'APDiameter', AP_Diameter, ...
+                        'CoaptationGapArea', Coaptation_Gap_Area, ...
+                        'Leaflet', MorphologyLeaflet(MorphLeafletDex(l)).LeafletID, ...
+                        'LeafletArea', MorphologyLeaflet(MorphLeafletDex(l)).LeafletArea, ...
+                        'LeafletPerimeter', MorphologyLeaflet(MorphLeafletDex(l)).LeafletPerimeter, ...
+                        'LeafletHeight', MorphologyLeaflet(MorphLeafletDex(l)).LeafletHeight, ...
+                        'LeafletWidth', MorphologyLeaflet(MorphLeafletDex(l)).LeafletWidth ...
+                    );
+                end
+            end
+
         end
+
+        % Calculate force difference across the clip axis
+        AcrossAxisForceDiff = 0;
+        AcrossAxisForceDiff = AcrossAxisForceDiff + mean([force_diff(closest_pins)]);
+        AcrossAxisForceDiff2 = AcrossAxisForceDiff + mean([force_diff(closest_pins_clip_2)]);
+        if isnan(AcrossAxisForceDiff)
+            AcrossAxisForceDiff = 0;
+        end
+
+        % Compute radial force vectors
+        pin_force_vecs = force_diff'.*pin_vecs;
+
+        % SL & AP force: 
+        SL_force = 0;
+        AP_force = 0;
+        for pin = 1:8
+            if pin_vecs(pin,1) < 0 && pin_vecs(pin,2) < 0 % Q1
+                SL_force = SL_force - pin_force_vecs(pin,1);
+                AP_force = AP_force - pin_force_vecs(pin,2);
+            elseif pin_vecs(pin,1) >= 0 && pin_vecs(pin,2) < 0 % Q2
+                SL_force = SL_force + pin_force_vecs(pin,1);
+                AP_force = AP_force - pin_force_vecs(pin,2);
+            elseif pin_vecs(pin,1) >= 0 && pin_vecs(pin,2) >= 0 % Q3
+                SL_force = SL_force + pin_force_vecs(pin,1);
+                AP_force = AP_force + pin_force_vecs(pin,2);
+            elseif pin_vecs(pin,1) < 0 && pin_vecs(pin,2) >= 0 % Q4
+                SL_force = SL_force - pin_force_vecs(pin,1);
+                AP_force = AP_force + pin_force_vecs(pin,2);
+            end
+        end
+
+        % store in struct
+        intervention_diff_rows(end+1) = struct( ...
+                'Heart', tt, ...
+                'Intervention', treatment_name, ...
+                'NumClips', numClips,...
+                'Pressure', interv_pressure_mean, ...
+                'FlowRate', interv_flow_mean, ...
+                'AcrossAxisForceDiff', AcrossAxisForceDiff, ...
+                'SLForce', SL_force, ...
+                'APForce', AP_force, ...
+                'ClipDistanceMax', clip_distance_max, ...
+                'ClipDistanceMin', clip_distance_min, ...
+                'ClipOrder', ClipOrder, ...
+                'Treatment', Treatment, ...
+                'AnnularArea', AnnularArea, ...
+                'AnnularPerimeter', AnnularPerimeter, ...
+                'SLDiameter', SL_Diameter, ...
+                'APDiameter', AP_Diameter, ...
+                'CoaptationGapArea', Coaptation_Gap_Area ...
+            );
+
+        if ~isempty(annotationData(annotationTestDex).ClipAxis2_Idx)
+            % add another row
+            intervention_diff_rows(end+1) = struct( ...
+                'Heart', tt, ...
+                'Intervention', treatment_name, ...
+                'NumClips', numClips,...
+                'Pressure', interv_pressure_mean, ...
+                'FlowRate', interv_flow_mean, ...
+                'AcrossAxisForceDiff', AcrossAxisForceDiff2, ...
+                'SLForce', SL_force, ...
+                'APForce', AP_force, ...
+                'ClipDistanceMax', clip_2_distance_max, ...
+                'ClipDistanceMin', clip_2_distance_min, ...
+                'ClipOrder', ClipOrder, ...
+                'Treatment', Treatment, ...
+                'AnnularArea', AnnularArea, ...
+                'AnnularPerimeter', AnnularPerimeter, ...
+                'SLDiameter', SL_Diameter, ...
+                'APDiameter', AP_Diameter, ...
+                'CoaptationGapArea', Coaptation_Gap_Area ...
+            );
+        end
+
     end
 end
 
 % Convert to table and write to Excel
+if ~isempty(diff_rows_full)
+    T_diff = struct2table(diff_rows_full);
+    outFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Statistics.xlsx');
+    try
+        writetable(T_diff, outFile_diff, 'Sheet', 'ForceDifferences', 'WriteMode', 'overwrite');
+        fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
+    catch ME
+        warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
+        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Statistics.csv');
+        writetable(T_diff, csvFile_diff);
+        fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
+    end
+else
+    warning('No force difference rows collected for export; no file written.');
+end
+
 if ~isempty(diff_rows)
     T_diff = struct2table(diff_rows);
     outFile_diff = fullfile(projectRoot, 'TriClipXT_Statistics.xlsx');
@@ -1220,7 +1537,55 @@ if ~isempty(diff_rows)
         fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
     catch ME
         warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
-        csvFile_diff = fullfile(projectRoot, 'TriClipXT_ForceDifferences_vs_Diseased.csv');
+        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Statistics.csv');
+        writetable(T_diff, csvFile_diff);
+        fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
+    end
+else
+    warning('No force difference rows collected for export; no file written.');
+end
+
+if ~isempty(intervention_diff_rows)
+    T_diff = struct2table(intervention_diff_rows);
+    outFile_diff = fullfile(projectRoot, 'TriClipXT_Intervention_Statistics.xlsx');
+    try
+        writetable(T_diff, outFile_diff, 'Sheet', 'ForceDifferences', 'WriteMode', 'overwrite');
+        fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
+    catch ME
+        warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
+        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Intervention_Statistics.csv');
+        writetable(T_diff, csvFile_diff);
+        fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
+    end
+else
+    warning('No force difference rows collected for export; no file written.');
+end
+
+if ~isempty(morph_full_diff_rows)
+    T_diff = struct2table(morph_full_diff_rows);
+    outFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Morphology_Statistics.xlsx');
+    try
+        writetable(T_diff, outFile_diff, 'Sheet', 'ForceDifferences', 'WriteMode', 'overwrite');
+        fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
+    catch ME
+        warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
+        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Morphology_Statistics.csv');
+        writetable(T_diff, csvFile_diff);
+        fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
+    end
+else
+    warning('No force difference rows collected for export; no file written.');
+end
+
+if ~isempty(morph_leaflet_diff_rows)
+    T_diff = struct2table(morph_leaflet_diff_rows);
+    outFile_diff = fullfile(projectRoot, 'TriClipXT_Leaflet_Morphology_Statistics.xlsx');
+    try
+        writetable(T_diff, outFile_diff, 'Sheet', 'ForceDifferences', 'WriteMode', 'overwrite');
+        fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
+    catch ME
+        warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
+        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Leaflet_Morphology_Statistics.csv');
         writetable(T_diff, csvFile_diff);
         fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
     end

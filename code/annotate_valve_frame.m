@@ -175,10 +175,22 @@ if needsClipAxis2
     clipAxis_xy_2 = p + cropOffset; % to original
 end
 
-
 %% ---- Step 3: Select commissures (AP, AS, SP) ----
 commissures_xy_crop = selectLabeledPointsStage(COMM_LABELS, "Commissure", 'r', 'o');
 commissures_xy = commissures_xy_crop + cropOffset; % to original
+
+%% ---- Step 4a: Trace Pin Width
+pin_width_xy = []; % 2x2
+
+title(hAx, {'Draw a line along the pin width; double-click to finish.'});
+set(txtStatus,'String','Draw pin width (double-click to finish).');
+
+hLine = drawline(hAx, 'Color','c','LineWidth',2);
+wait(hLine); % double-click to finish
+
+% Line endpoints are in CROPPED coords
+p = hLine.Position; % 2x2 [x y] in cropped
+pin_width_xy = p + cropOffset; % to original
 
 %% ---- Step 4: Select pins (1..8) ----
 pins_xy_crop = selectLabeledPointsStage(PIN_LABELS, "Pin", 'c', 's');
@@ -338,6 +350,8 @@ annotation.cropFrameSize = size(frameCrop);
 annotation.cropOffset = cropOffset;
 annotation.cropRect_xywh = [x1 y1 (x2-x1) (y2-y1)]; % original coords
 
+annotation.clip_center_xy = clip_center_xy;
+annotation.clip_center_xy_2 = clip_center_xy_2;
 annotation.clipAxis_xy = clipAxis_xy; % [] or 2x2 [x y] in original coords
 annotation.clipAxis_xy_2 = clipAxis_xy_2;
 
@@ -346,6 +360,7 @@ annotation.commissures_xy = commissures_xy; % 3x2 original coords
 
 annotation.pin_labels = PIN_LABELS;
 annotation.pins_xy = pins_xy; % 8x2 original coords
+annotation.pin_width_xy = pin_width_xy; % to get pixels to mm
 
 annotation.valve_closed = valveClosed;
 annotation.gap_regions_xy = gap_regions_xy;  % cell array of polygons in original coords
