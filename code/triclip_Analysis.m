@@ -1346,7 +1346,7 @@ for i = 1:numel(intervention_names)
                     'FlowRate', interv_data(replicate).FlowRate, ...
                     'Pin', pin, ...
                     'Force', interv_data(replicate).(force_col), ...
-                    'ForceDifference', interv_data(replicate).(force_col) - diseased_force_mean, ...
+                    'ForceDifference', interv_data(replicate).(force_col) - diseased_force_mean(pin), ...
                     'PressureDifference', interv_data(replicate).Pressure - diseased_pressure_mean, ...
                     'FlowDifference', interv_data(replicate).FlowRate - diseased_flow_mean, ...
                     'ClipOrder', ClipOrder, ...
@@ -1515,80 +1515,45 @@ end
 % Convert to table and write to Excel
 if ~isempty(diff_rows_full)
     T_diff = struct2table(diff_rows_full);
-    outFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Statistics.xlsx');
-    try
-        writetable(T_diff, outFile_diff, 'Sheet', 'ForceDifferences', 'WriteMode', 'overwrite');
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
-    catch ME
-        warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
-        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Statistics.csv');
-        writetable(T_diff, csvFile_diff);
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
-    end
+    csvFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Statistics.csv');
+    writetable(T_diff, csvFile_diff, 'WriteMode', 'overwrite');
+    fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
 else
     warning('No force difference rows collected for export; no file written.');
 end
 
 if ~isempty(diff_rows)
     T_diff = struct2table(diff_rows);
-    outFile_diff = fullfile(projectRoot, 'TriClipXT_Statistics.xlsx');
-    try
-        writetable(T_diff, outFile_diff, 'Sheet', 'ForceDifferences', 'WriteMode', 'overwrite');
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
-    catch ME
-        warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
-        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Statistics.csv');
-        writetable(T_diff, csvFile_diff);
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
-    end
+    csvFile_diff = fullfile(projectRoot, 'TriClipXT_Statistics.csv');
+    writetable(T_diff, csvFile_diff, 'WriteMode', 'overwrite');
+    fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
 else
     warning('No force difference rows collected for export; no file written.');
 end
 
 if ~isempty(intervention_diff_rows)
     T_diff = struct2table(intervention_diff_rows);
-    outFile_diff = fullfile(projectRoot, 'TriClipXT_Intervention_Statistics.xlsx');
-    try
-        writetable(T_diff, outFile_diff, 'Sheet', 'ForceDifferences', 'WriteMode', 'overwrite');
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
-    catch ME
-        warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
-        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Intervention_Statistics.csv');
-        writetable(T_diff, csvFile_diff);
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
-    end
+    csvFile_diff = fullfile(projectRoot, 'TriClipXT_Intervention_Statistics.csv');
+    writetable(T_diff, csvFile_diff, 'WriteMode', 'overwrite');
+    fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
 else
     warning('No force difference rows collected for export; no file written.');
 end
 
 if ~isempty(morph_full_diff_rows)
     T_diff = struct2table(morph_full_diff_rows);
-    outFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Morphology_Statistics.xlsx');
-    try
-        writetable(T_diff, outFile_diff, 'Sheet', 'ForceDifferences', 'WriteMode', 'overwrite');
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
-    catch ME
-        warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
-        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Morphology_Statistics.csv');
-        writetable(T_diff, csvFile_diff);
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
-    end
+    csvFile_diff = fullfile(projectRoot, 'TriClipXT_Full_Morphology_Statistics.csv');
+    writetable(T_diff, csvFile_diff, 'WriteMode', 'overwrite');
+    fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
 else
     warning('No force difference rows collected for export; no file written.');
 end
 
 if ~isempty(morph_leaflet_diff_rows)
     T_diff = struct2table(morph_leaflet_diff_rows);
-    outFile_diff = fullfile(projectRoot, 'TriClipXT_Leaflet_Morphology_Statistics.xlsx');
-    try
-        writetable(T_diff, outFile_diff, 'Sheet', 'ForceDifferences', 'WriteMode', 'overwrite');
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), outFile_diff);
-    catch ME
-        warning('MATLAB:ExcelWrite', 'Failed to write force difference Excel file: %s. Attempting to save as CSV instead.', ME.message);
-        csvFile_diff = fullfile(projectRoot, 'TriClipXT_Leaflet_Morphology_Statistics.csv');
-        writetable(T_diff, csvFile_diff);
-        fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
-    end
+    csvFile_diff = fullfile(projectRoot, 'TriClipXT_Leaflet_Morphology_Statistics.csv');
+    writetable(T_diff, csvFile_diff, 'WriteMode', 'overwrite');
+    fprintf('Exported %d force difference rows to %s\n', height(T_diff), csvFile_diff);
 else
     warning('No force difference rows collected for export; no file written.');
 end

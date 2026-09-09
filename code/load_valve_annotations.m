@@ -289,9 +289,9 @@ for k = 1:length(annotationData)
 end
 
 AnnotatedVideoDataTable = struct2table(AnnotatedVideoData);
-
-save(fullfile(folderPath,'AnnotatedVideoData.mat'),'AnnotatedVideoData')
-save(fullfile(folderPath,'ClipCenters.mat'),'ClipCenter','ClipCenter2')
+% 
+% save(fullfile(folderPath,'AnnotatedVideoData.mat'),'AnnotatedVideoData')
+% save(fullfile(folderPath,'ClipCenters.mat'),'ClipCenter','ClipCenter2')
 
 %% HELPER FUNCTIONS
 function [P, segIdx, bxy] = clipAxisAnnulusIntersection(ann, clipAxis_xy, varargin)
