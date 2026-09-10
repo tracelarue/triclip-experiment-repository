@@ -451,7 +451,7 @@ for i = 1:num_interv
     avg_pressure(i) = mean(perTestMeans);
     if numel(perTestMeans) > 1
         std_pressure(i) = std(perTestMeans);
-        std_pressure(i) = std(perTestMeans)./numel(tests); % standard error across tests
+        std_pressure(i) = std(perTestMeans)./sqrt(numel(tests)); % standard error across tests
     else
         std_pressure(i) = 0;
     end
@@ -504,6 +504,7 @@ end
 % Axis labels and formatting
 xlabel('Intervention', 'FontSize', 12);
 ylabel('Pressure (mmHg)', 'FontSize', 12);
+ylim([0,40])
 set(gca, 'XTick', x, 'XTickLabel', interventions, 'XTickLabelRotation',30);
 set(gcf, 'Color', 'white');
 grid on;
@@ -537,7 +538,7 @@ for i = 1:num_interv
     avg_flow(i) = mean(perTestMeans);            % mean across tests
     if numel(perTestMeans) > 1
         std_flow(i) = std(perTestMeans);         % std across tests
-        std_flow(i) = std(perTestMeans)./numel(tests); % standard error across tests
+        std_flow(i) = std(perTestMeans)./sqrt(numel(tests)); % standard error across tests
     else
         std_flow(i) = 0;
     end
@@ -1117,7 +1118,8 @@ diff_rows_full = struct('Heart', {}, 'Intervention', {}, 'NumClips', {}, 'Pressu
     'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {}, 'ReplicateTestNum', {}, ...
     'AnnularArea', {}, 'AnnularPerimeter', {}, 'SLDiameter', {}, 'APDiameter', {}, 'CoaptationGapArea', {});
 intervention_diff_rows = struct('Heart', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, ...
-    'AcrossAxisForceDiff', {},'SLForce', {}, 'APForce', {}, 'ClipDistanceMax', {}, 'ClipDistanceMin', {}, 'ClipOrder', {}, 'Treatment', {}, ...
+    'AcrossAxisForceDiff', {},'SLForce', {}, 'APForce', {}, 'ClipDistanceMax', {}, 'ClipDistanceMin', {}, 'ClipDistanceMean', {},...
+     'ClipAngle', {}, 'PeakForceAngle', {}, 'ForceClipAngleDifference', {}, 'ClipOrder', {}, 'Treatment', {}, ...
     'AnnularArea', {}, 'AnnularPerimeter', {}, 'SLDiameter', {}, 'APDiameter', {}, 'CoaptationGapArea', {});
 morph_full_diff_rows = struct('Heart', {}, 'Intervention', {}, 'NumClips', {}, 'Pressure', {}, 'FlowRate', {}, 'Pin', {}, 'Force', {}, ...
     'ForceDifference', {}, 'PressureDifference', {}, 'FlowDifference', {}, 'ClipOrder', {}, 'Treatment', {}, ...
@@ -1238,54 +1240,61 @@ for i = 1:numel(intervention_names)
             end
         end
 
-        AnnularArea = annotationData(annotationTestDex).Area;
-        AnnularPerimeter = annotationData(annotationTestDex).Perimeter;
-        SL_Diameter = annotationData(annotationTestDex).SL_Diameter;
-        AP_Diameter = annotationData(annotationTestDex).AP_Diameter;
-        Coaptation_Gap_Area = annotationData(annotationTestDex).Gap_Area;
+        a = annotationData(annotationTestDex);
+        V = a.AnnulusOutline.Vertices;
+
+        AnnularArea = a.Area;
+        AnnularPerimeter = a.Perimeter;
+        SL_Diameter = a.SL_Diameter;
+        AP_Diameter = a.AP_Diameter;
+        Coaptation_Gap_Area = a.Gap_Area;
 
         % find nearest pin to clip line
         closest_pins = [];
         closest_pins_clip_2 = [];
         if ~isempty(annotationData(annotationTestDex).ClipAxis_Idx)
-            closest_pins_1 = knnsearch(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),...
-                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis_Idx(1),:),'K',2);
-            closest_pins_2 = knnsearch(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),...
-                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis_Idx(2),:),'K',2);
+            closest_pins_1 = knnsearch(V(a.Pin_Idx,:),...
+                V(a.ClipAxis_Idx(1),:),'K',2);
+            closest_pins_2 = knnsearch(V(a.Pin_Idx,:),...
+                V(a.ClipAxis_Idx(2),:),'K',2);
             closest_pins = [closest_pins_1, closest_pins_2];
             closest_pins = unique(closest_pins);
         end
-        if ~isempty(annotationData(annotationTestDex).ClipAxis2_Idx)
-            closest_pins_3 = knnsearch(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),...
-                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis2_Idx(1),:),'K',2);
-            closest_pins_4 = knnsearch(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),...
-                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis2_Idx(2),:),'K',2);
+        if ~isempty(a.ClipAxis2_Idx)
+            closest_pins_3 = knnsearch(V(a.Pin_Idx,:),...
+                V(a.ClipAxis2_Idx(1),:),'K',2);
+            closest_pins_4 = knnsearch(V(a.Pin_Idx,:),...
+                V(a.ClipAxis2_Idx(2),:),'K',2);
             closest_pins_clip_2 = [closest_pins_3, closest_pins_4];
             closest_pins_clip_2 = unique(closest_pins_clip_2);
         end
         
         % assume pins measure radial forces towards centroid
-        pin_vecs = -annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:)./...
-            vecnorm(annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).Pin_Idx,:),2,2);
+        pin_vecs = -V(a.Pin_Idx,:)./...
+            vecnorm(V(a.Pin_Idx,:),2,2);
 
         % find distances from clip to annulus
         clip_distance_max = 0;
         clip_distance_min = 0;
+        clip_distance_mean = 0;
         clip_2_distance_max = 0;
         clip_2_distance_min = 0;
-        if ~isempty(annotationData(annotationTestDex).ClipAxis_Idx)
-            clip_distances = vecnorm([annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis_Idx(1),:) - annotationData(annotationTestDex).ClipCenter; ...
-                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis_Idx(2),:) - annotationData(annotationTestDex).ClipCenter],2,2);
-            clip_distances = annotationData(annotationTestDex).mmPerPixel.*clip_distances;
+        clip_2_distance_mean = 0;
+        if ~isempty(a.ClipAxis_Idx)
+            clip_distances = vecnorm([V(a.ClipAxis_Idx(1),:) - a.ClipCenter; ...
+                V(a.ClipAxis_Idx(2),:) - a.ClipCenter],2,2);
+            clip_distances = a.mmPerPixel.*clip_distances;
             clip_distance_max = max(clip_distances);
             clip_distance_min = min(clip_distances);
+            clip_distance_mean = (max(clip_distances) + min(clip_distances))/2;
         end
-        if ~isempty(annotationData(annotationTestDex).ClipAxis2_Idx)
-            clip2_distances = vecnorm([annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis2_Idx(1),:) - annotationData(annotationTestDex).ClipCenter2; ...
-                annotationData(annotationTestDex).AnnulusOutline.Vertices(annotationData(annotationTestDex).ClipAxis2_Idx(2),:) - annotationData(annotationTestDex).ClipCenter2],2,2);
-            clip2_distances = annotationData(annotationTestDex).mmPerPixel.*clip2_distances;
+        if ~isempty(a.ClipAxis2_Idx)
+            clip2_distances = vecnorm([V(a.ClipAxis2_Idx(1),:) - a.ClipCenter2; ...
+                V(a.ClipAxis2_Idx(2),:) - a.ClipCenter2],2,2);
+            clip2_distances = a.mmPerPixel.*clip2_distances;
             clip_2_distance_max = max(clip2_distances);
             clip_2_distance_min = min(clip2_distances);
+            clip_2_distance_mean = (max(clip2_distances) + min(clip2_distances))/2;
         end
 
 
@@ -1436,15 +1445,42 @@ for i = 1:numel(intervention_names)
         end
 
         % Calculate force difference across the clip axis
-        AcrossAxisForceDiff = 0;
-        AcrossAxisForceDiff = AcrossAxisForceDiff + mean([force_diff(closest_pins)]);
-        AcrossAxisForceDiff2 = AcrossAxisForceDiff + mean([force_diff(closest_pins_clip_2)]);
-        if isnan(AcrossAxisForceDiff)
-            AcrossAxisForceDiff = 0;
+        % Note: Watch scale on this. Summing different numbers of "closest
+        % pins" can scale force F reported to 2F, 4F, etc.
+
+        % AcrossAxisForceDiff = 0;
+        % % AcrossAxisForceDiff = AcrossAxisForceDiff + mean([force_diff(closest_pins)]);
+        % % AcrossAxisForceDiff2 = AcrossAxisForceDiff + mean([force_diff(closest_pins_clip_2)]);
+        % AcrossAxisForceDiff = AcrossAxisForceDiff + sum([force_diff(closest_pins)]);
+        % AcrossAxisForceDiff2 = AcrossAxisForceDiff + sum([force_diff(closest_pins_clip_2)]);
+        % if isnan(AcrossAxisForceDiff)
+        %     AcrossAxisForceDiff = 0;
+        % end
+
+        % Interpolate force differences at the two annulus/clip-axis crossings.
+        AcrossAxisForceDiff  = NaN;
+        AcrossAxisForceDiff2 = NaN;
+        crossingForces1 = [];
+        crossingForces2 = [];
+
+        if ~isempty(a.ClipAxis_Idx)
+            crossingForces1 = interpolateAnnularForce( ...
+                V, a.Pin_Idx, force_diff, a.ClipAxis_Idx);
+            AcrossAxisForceDiff = sum(crossingForces1);
+        end
+
+        if ~isempty(a.ClipAxis2_Idx)
+            crossingForces2 = interpolateAnnularForce( ...
+                V, a.Pin_Idx, force_diff, a.ClipAxis2_Idx);
+            AcrossAxisForceDiff2 = sum(crossingForces2);
         end
 
         % Compute radial force vectors
         pin_force_vecs = force_diff'.*pin_vecs;
+        
+        % sum force, which would be like total force vector? Don't think it
+        % actually means anything
+        sum_rad_force = sum(pin_force_vecs);
 
         % SL & AP force: 
         SL_force = 0;
@@ -1465,6 +1501,46 @@ for i = 1:numel(intervention_names)
             end
         end
 
+        % Clip Orientation
+        % Clip-axis angles relative to AP (+y), modulo 180 degrees.
+        clipIdx = {a.ClipAxis_Idx, a.ClipAxis2_Idx};
+        clipAngles = nan(1,2);
+
+        for c = 1:2
+            if numel(clipIdx{c}) == 2
+                d = V(clipIdx{c}(2),:) - V(clipIdx{c}(1),:);
+                clipAngles(c) = mod(atan2d(d(1), d(2)), 180);
+            end
+        end
+
+        % Combined orientation: axial circular mean of available clips.
+        validAngles = clipAngles(isfinite(clipAngles));
+        ClipAngle = NaN;
+        if ~isempty(validAngles)
+            z = mean(exp(2i * deg2rad(validAngles)));
+            if abs(z) > 1e-8  % Perpendicular axes have no unique mean orientation.
+                ClipAngle = mod(rad2deg(angle(z))/2, 180);
+            end
+        end
+
+        % Most negative pin force CHANGE; use interv_force_mean for measured force.
+        F = force_diff(:);
+        F(~isfinite(F)) = Inf;
+        [peakNegativeForce, peakPin] = min(F);
+
+        PeakForceAngle = NaN;
+        if isfinite(peakNegativeForce)
+            r = V(a.Pin_Idx(peakPin),:);  % Centroid-to-pin radial vector.
+            PeakForceAngle = mod(atan2d(r(1), r(2)), 180);
+        else
+            peakNegativeForce = NaN;
+            peakPin = NaN;
+        end
+
+        % Smallest angular separation between force and clip axes: 0–90 degrees.
+        ForceClipAngleDifference = abs( ...
+            mod(PeakForceAngle - ClipAngle + 90, 180) - 90);
+
         % store in struct
         intervention_diff_rows(end+1) = struct( ...
                 'Heart', tt, ...
@@ -1477,6 +1553,10 @@ for i = 1:numel(intervention_names)
                 'APForce', AP_force, ...
                 'ClipDistanceMax', clip_distance_max, ...
                 'ClipDistanceMin', clip_distance_min, ...
+                'ClipDistanceMean', clip_distance_mean, ...
+                'ClipAngle',ClipAngle, ...
+                'PeakForceAngle',PeakForceAngle, ...
+                'ForceClipAngleDifference',ForceClipAngleDifference, ...
                 'ClipOrder', ClipOrder, ...
                 'Treatment', Treatment, ...
                 'AnnularArea', AnnularArea, ...
@@ -1499,6 +1579,10 @@ for i = 1:numel(intervention_names)
                 'APForce', AP_force, ...
                 'ClipDistanceMax', clip_2_distance_max, ...
                 'ClipDistanceMin', clip_2_distance_min, ...
+                'ClipDistanceMean', clip_2_distance_mean, ...
+                'ClipAngle',ClipAngle, ...
+                'PeakForceAngle',PeakForceAngle, ...
+                'ForceClipAngleDifference',ForceClipAngleDifference, ...
                 'ClipOrder', ClipOrder, ...
                 'Treatment', Treatment, ...
                 'AnnularArea', AnnularArea, ...
@@ -1861,3 +1945,142 @@ end
 %     pubPlot('Width','double','Height',400);
 % end
 
+
+%% Plot from long form
+p = plotInternventionLongForm(intervention_diff_rows,'AcrossAxisForceDiff');
+p = plotInternventionLongForm(intervention_diff_rows,'SLForce');
+p = plotInternventionLongForm(intervention_diff_rows,'APForce');
+p = plotInternventionLongForm(intervention_diff_rows,'SumRadialForceSL');
+p = plotInternventionLongForm(intervention_diff_rows,'SumRadialForceAP');
+
+%% HELPER FUNCTIONS
+function Fcross = interpolateAnnularForce(V, pinIdx, Fpin, crossingIdx)
+% Periodic linear interpolation using distance along a closed annulus.
+% V:           ordered annular boundary vertices, N-by-2
+% pinIdx:      vertex index for each pin, in force-channel order
+% Fpin:        force or force difference for each pin
+% crossingIdx: vertex indices of the two clip-axis crossings
+
+    pinIdx = pinIdx(:);
+    Fpin = Fpin(:);
+    crossingIdx = crossingIdx(:);
+
+    assert(size(V,2) == 2 && all(isfinite(V(:))), ...
+        'Expected one continuous annular boundary without NaN separators.');
+    assert(numel(pinIdx) == numel(Fpin), ...
+        'Each pin must have a corresponding force value.');
+    assert(numel(crossingIdx) == 2, ...
+        'Expected exactly two clip-axis crossings.');
+
+    % Cumulative arc length at each vertex, including closing edge.
+    edgeLength = vecnorm(diff([V; V(1,:)], 1, 1), 2, 2);
+    s = [0; cumsum(edgeLength(1:end-1))];
+    perimeterLength = sum(edgeLength);
+
+    assert(perimeterLength > 0, 'Annular perimeter must be positive.');
+
+    % Sort pins by position along the boundary, preserving force pairing.
+    sPin = mod(s(pinIdx), perimeterLength);
+    [sPin, order] = sort(sPin);
+    FpinSorted = Fpin(order);
+
+    assert(numel(sPin) >= 2 && all(diff(sPin) > 0), ...
+        'Pins must occupy distinct positions along the annulus.');
+
+    % Extend periodically so interpolation also works across the seam
+    % between the last and first boundary vertices.
+    sExtended = [sPin(end) - perimeterLength; ...
+                 sPin; ...
+                 sPin(1) + perimeterLength];
+    FExtended = [FpinSorted(end); FpinSorted; FpinSorted(1)];
+
+    sCross = mod(s(crossingIdx), perimeterLength);
+    Fcross = interp1(sExtended, FExtended, sCross, 'linear');
+
+    % % plot for checking
+    % figure()
+    % hold on
+    % axis equal
+    % 
+    % plot([V(:,1); V(1,1)], [V(:,2); V(1,2)], 'k-');
+    % 
+    % P = V(pinIdx,:);
+    % C = V(crossingIdx,:);
+    % 
+    % plot(P(:,1), P(:,2), 'co', 'MarkerFaceColor', 'c');
+    % plot(C(:,1), C(:,2), 'mo--', 'LineWidth', 1.5);
+    % 
+    % for i = 1:numel(pinIdx)
+    %     text(P(i,1), P(i,2), ...
+    %         sprintf('  P%d: %.3f N', i, Fpin(i)), ...
+    %         'Color', [0 0.5 0.5]);
+    % end
+    % 
+    % for i = 1:numel(crossingIdx)
+    %     text(C(i,1), C(i,2), ...
+    %         sprintf('  Crossing %d: %.3f N', i, Fcross(i)), ...
+    %         'Color', 'm');
+    % end
+    % 
+    % % Radial directions assume the annulus is centered at the origin.
+    % pin_vecs   = P ./ vecnorm(P, 2, 2);
+    % cross_vecs = C ./ vecnorm(C, 2, 2);
+    % 
+    % vec_scale = 1e3;
+    % quiver(P(:,1), P(:,2), ...
+    %     vec_scale * Fpin(:) .* pin_vecs(:,1), ...
+    %     vec_scale * Fpin(:) .* pin_vecs(:,2), ...
+    %     0, 'Color', [0 0.6 0.6]);
+    % 
+    % quiver(C(:,1), C(:,2), ...
+    %     vec_scale * Fcross(:) .* cross_vecs(:,1), ...
+    %     vec_scale * Fcross(:) .* cross_vecs(:,2), ...
+    %     0, 'Color', 'm');
+
+end
+
+function fig = plotInternventionLongForm(intervention_diff_rows,DataName)
+    fig = figure('Name',[sprintf(DataName),' vs Interventions']);
+    hold on
+
+    bar([0:6],[...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''Control'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''AS'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''AP'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SP'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''ASAP'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SPAS'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SPAP'')).',sprintf(DataName),']'])),...
+        ])
+    
+    scatter(0*ones(sum(strcmp({intervention_diff_rows.Intervention},'Control')),1),eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''Control'')).',sprintf(DataName),']']),'MarkerEdgeColor','k')
+    scatter(1*ones(sum(strcmp({intervention_diff_rows.Intervention},'AS')),1),eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''AS'')).',sprintf(DataName),']']),'MarkerEdgeColor','k')
+    scatter(2*ones(sum(strcmp({intervention_diff_rows.Intervention},'AP')),1),eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''AP'')).',sprintf(DataName),']']),'MarkerEdgeColor','k')
+    scatter(3*ones(sum(strcmp({intervention_diff_rows.Intervention},'SP')),1),eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SP'')).',sprintf(DataName),']']),'MarkerEdgeColor','k')
+    scatter(4*ones(sum(strcmp({intervention_diff_rows.Intervention},'ASAP')),1),eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''ASAP'')).',sprintf(DataName),']']),'MarkerEdgeColor','k')
+    scatter(5*ones(sum(strcmp({intervention_diff_rows.Intervention},'SPAS')),1),eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SPAS'')).',sprintf(DataName),']']),'MarkerEdgeColor','k')
+    scatter(6*ones(sum(strcmp({intervention_diff_rows.Intervention},'SPAP')),1),eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SPAP'')).',sprintf(DataName),']']),'MarkerEdgeColor','k')
+    
+    errorbar([0:6],[...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''Control'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''AS'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''AP'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SP'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''ASAP'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SPAS'')).',sprintf(DataName),']'])),...
+        mean(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SPAP'')).',sprintf(DataName),']'])),...
+        ],[...
+        std(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''Control'')).',sprintf(DataName),']']))./sqrt(sum(strcmp({intervention_diff_rows.Intervention},'Control'))),...
+        std(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''AS'')).',sprintf(DataName),']']))./sqrt(sum(strcmp({intervention_diff_rows.Intervention},'AS'))),...
+        std(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''AP'')).',sprintf(DataName),']']))./sqrt(sum(strcmp({intervention_diff_rows.Intervention},'AP'))),...
+        std(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SP'')).',sprintf(DataName),']']))./sqrt(sum(strcmp({intervention_diff_rows.Intervention},'SP'))),...
+        std(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''ASAP'')).',sprintf(DataName),']']))./sqrt(sum(strcmp({intervention_diff_rows.Intervention},'ASAP'))),...
+        std(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SPAS'')).',sprintf(DataName),']']))./sqrt(sum(strcmp({intervention_diff_rows.Intervention},'SPAS'))),...
+        std(eval(['[intervention_diff_rows(strcmp({intervention_diff_rows.Intervention},''SPAP'')).',sprintf(DataName),']']))./sqrt(sum(strcmp({intervention_diff_rows.Intervention},'SPAP'))),...
+        ], 'k', 'LineWidth', 1.2, 'LineStyle', 'none')
+    
+    xlim([0.5,6.5])
+    xticks([0:6])
+    xticklabels({'Dis', 'AS', 'AP', 'SP ', 'ASAP', 'SPAS', 'SPAP'})
+    ylabel(DataName)
+end
